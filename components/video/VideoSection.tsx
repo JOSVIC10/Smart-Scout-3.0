@@ -5,6 +5,7 @@ import { CustomVideoPlayer } from './CustomVideoPlayer'
 import { MetricasN2Botonera } from './MetricasN2Botonera'
 import { PitchMap } from './PitchMap'
 import { VideoUploadModal } from './VideoUploadModal'
+import { VideoAnalyticsSection } from './VideoAnalyticsSection'
 import {
   Video,
   Play,
@@ -594,6 +595,9 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
               )}
             </CardContent>
           </Card>
+
+          {/* ——— Telemetría del Partido ——— */}
+          <VideoAnalyticsSection partidoId={selectedVideo?.partido_id ?? null} />
         </div>
 
         {/* ========================================================= */}

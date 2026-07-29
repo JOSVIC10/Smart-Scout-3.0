@@ -93,6 +93,10 @@ export interface Partido {
   competicion: string | null
   categoria: Categoria | null
   notas: string | null
+  video_url?: string | null
+  telemetria_url?: string | null
+  posesion_local?: number | null
+  posesion_visitante?: number | null
   created_at: string
 }
 
