@@ -10,6 +10,7 @@ import { VideoSection } from '@/components/video/VideoSection'
 import { ComparadorSection } from '@/components/comparador/ComparadorSection'
 import { ModelosSection } from '@/components/modelos/ModelosSection'
 import { CampogramaSection } from '@/components/campograma/CampogramaSection'
+import { EnDirectoSection } from '@/components/endirecto/EnDirectoSection'
 import { obtenerModelos } from '@/lib/supabase/modelos'
 import type { ModeloJuego, JugadorConClub } from '@/types/database'
 
@@ -129,7 +130,10 @@ export default function Home() {
           )}
 
           {activeSection === 'comparador' && (
-            <ComparadorSection activeModelName={activeModelName} />
+            <ComparadorSection
+              activeModelName={activeModelName}
+              activeModelId={activeModel.id}
+            />
           )}
 
           {activeSection === 'modelos' && (
@@ -140,7 +144,18 @@ export default function Home() {
           )}
 
           {activeSection === 'campograma' && (
-            <CampogramaSection activeModelName={activeModelName} />
+            <CampogramaSection
+              activeModelName={activeModelName}
+              activeModelId={activeModel.id}
+            />
+          )}
+
+          {activeSection === 'en-directo' && (
+            <EnDirectoSection
+              activeModelId={activeModel.id}
+              activeModelName={activeModelName}
+              onScoreUpdated={handleScoreUpdated}
+            />
           )}
         </main>
       </div>

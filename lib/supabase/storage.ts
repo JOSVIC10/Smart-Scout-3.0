@@ -80,3 +80,29 @@ export function obtenerUrlEscudo(rutaRelativa: string | null): string | null {
     .getPublicUrl(rutaRelativa)
   return data.publicUrl
 }
+
+const BUCKET_CLIPS = 'clips'
+
+/**
+ * Sube un clip de vídeo al bucket y devuelve la URL pública.
+ */
+export async function subirClipJugador(
+  archivo: File | Blob,
+  jugadorId: string,
+  accionId: string
+): Promise<string> {
+  const extension = archivo instanceof File ? archivo.name.split('.').pop() : 'webm'
+  const ruta = `${jugadorId}/${accionId}_${Date.now()}.${extension}`
+
+  const { error } = await supabase.storage
+    .from(BUCKET_CLIPS)
+    .upload(ruta, archivo, { upsert: true, contentType: archivo.type })
+
+  if (error) throw error
+
+  const { data } = supabase.storage
+    .from(BUCKET_CLIPS)
+    .getPublicUrl(ruta)
+
+  return data.publicUrl
+}

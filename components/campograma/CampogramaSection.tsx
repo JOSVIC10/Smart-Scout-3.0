@@ -30,6 +30,7 @@ import {
 
 interface CampogramaSectionProps {
   activeModelName: string
+  activeModelId?: string
 }
 
 // ----------------------------------------------------------------------
@@ -179,7 +180,7 @@ function DroppableSlot({
 }
 
 
-export function CampogramaSection({ activeModelName }: CampogramaSectionProps) {
+export function CampogramaSection({ activeModelName, activeModelId }: CampogramaSectionProps) {
   const [formacion, setFormacion] = useState<string>('4-3-3')
   const [slots, setSlots] = useState<SlotTactico[]>(FORMACIONES['4-3-3'])
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
@@ -241,7 +242,7 @@ export function CampogramaSection({ activeModelName }: CampogramaSectionProps) {
     try {
       await crearAlineacion({
         nombre,
-        modelo_id: null, // Podríamos guardar el activeModelId si viniera por props
+        modelo_id: activeModelId ?? null,
         formacion,
         slots,
         notas: null,

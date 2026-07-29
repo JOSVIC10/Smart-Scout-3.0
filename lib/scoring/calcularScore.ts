@@ -10,7 +10,8 @@
 //   5. Devuelve score 0–100 y actualiza jugador + jugador_metricas_n2 en Supabase
 
 import { supabase } from '@/lib/supabase/client'
-import type { Posicion } from '@/types/database'
+import { ZONA_FACTOR, PESO_POR_RANGO, METRICAS_N2_POR_POSICION } from '@/lib/constants'
+import type { Posicion, ZonaCampo, ResultadoAccion } from '@/types/database'
 
 // ---------------------------------------------------------------------------
 // Tipos de resultado
@@ -45,6 +46,39 @@ export interface ResultadoScore {
   partidos_analizados: number
   /** Fiabilidad del score */
   fiabilidad: 'alta' | 'media' | 'baja'
+}
+
+// ---------------------------------------------------------------------------
+// Cálculo del Valor de Acción
+// ---------------------------------------------------------------------------
+
+/**
+ * Calcula el valor de una acción individual (MVP Auto-Clips).
+ * @param resultado - Efectiva o No Efectiva
+ * @param posicion - Posición del jugador
+ * @param codigoMetricaN2 - Código de la métrica N2 de la acción
+ * @param zona - Zona del campo donde ocurrió la acción
+ */
+export function calcularValorAccion(
+  resultado: ResultadoAccion,
+  posicion: Posicion,
+  codigoMetricaN2: string,
+  zona: ZonaCampo | null
+): number {
+  const resultadoBinario = resultado === 'efectiva' ? 1 : 0
+  
+  const metricasPosicion = METRICAS_N2_POR_POSICION[posicion] || []
+  const idx = metricasPosicion.findIndex((m) => m.codigo === codigoMetricaN2)
+  
+  // Si no está, asumimos el menor peso
+  const peso = (idx >= 0 && idx < PESO_POR_RANGO.length)
+    ? PESO_POR_RANGO[idx]
+    : PESO_POR_RANGO[PESO_POR_RANGO.length - 1]
+    
+  const factorZona = zona ? (ZONA_FACTOR[zona] ?? 1.0) : 1.0
+  
+  const valor = resultadoBinario * peso * factorZona
+  return Math.round(valor * 1000) / 1000
 }
 
 // ---------------------------------------------------------------------------
@@ -126,15 +160,19 @@ export async function calcularScore(
   // ── 3. Obtener acciones etiquetadas del jugador agrupadas por métrica N2 ──
   const { data: acciones, error: aErr } = await supabase
     .from('acciones_etiquetadas')
-    .select('metrica_n2_id, resultado')
+    .select('metrica_n2_id, resultado, valor_accion')
     .eq('jugador_id', jugadorId)
     .in('metrica_n2_id', metricaIds)
 
   if (aErr) throw aErr
 
-  // Agrupar por metrica_n2_id
+  // Agrupar por metrica_n2_id y sumar valor de acciones como bonus
+  let bonusValorAccion = 0
   const accionesPorMetrica = new Map<string, { total: number; efectivas: number }>()
-  for (const acc of (acciones ?? []) as { metrica_n2_id: string; resultado: string }[]) {
+  
+  for (const acc of (acciones ?? []) as { metrica_n2_id: string; resultado: string; valor_accion: number | null }[]) {
+    if (acc.valor_accion) bonusValorAccion += acc.valor_accion
+    
     if (!acc.metrica_n2_id) continue
     const entry = accionesPorMetrica.get(acc.metrica_n2_id) ?? { total: 0, efectivas: 0 }
     entry.total++
@@ -271,6 +309,9 @@ export async function calcularScore(
       muestra: muestrasJugador.get(metId) ?? 0,
     })
   }
+
+  // Añadir el bonus de valor_accion
+  scoreFinal += bonusValorAccion
 
   // Ordenar por contribución para fortalezas y debilidades
   const ordenado = [...desglose].sort((a, b) => b.contribucion - a.contribucion)

@@ -6,6 +6,7 @@ import { MetricasN2Botonera } from './MetricasN2Botonera'
 import { PitchMap } from './PitchMap'
 import { VideoUploadModal } from './VideoUploadModal'
 import { VideoAnalyticsSection } from './VideoAnalyticsSection'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import {
   Video,
   Play,
@@ -34,8 +35,8 @@ import { obtenerVideos } from '@/lib/supabase/partidos'
 import { obtenerJugadores } from '@/lib/supabase/jugadores'
 import { obtenerMetricasN1PorPosicion } from '@/lib/supabase/metricas'
 import { obtenerAccionesPorVideo, crearAccion, eliminarAccion } from '@/lib/supabase/acciones'
-import { ZONA_LABELS, POSICION_LABELS, METRICAS_N2_POR_POSICION, type MetricaN2Config } from '@/lib/constants'
-import { calcularScore } from '@/lib/scoring/calcularScore'
+import { ZONA_LABELS, POSICION_LABELS, METRICAS_N2_POR_POSICION, CLIP_MARGINS, type MetricaN2Config } from '@/lib/constants'
+import { calcularScore, calcularValorAccion } from '@/lib/scoring/calcularScore'
 import type {
   Video as VideoType,
   JugadorConClub,
@@ -94,6 +95,7 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
   const [savingAction, setSavingAction] = useState(false)
   // Feedback del auto-recálculo de score
   const [autoScoreFeedback, setAutoScoreFeedback] = useState<{ score: number; nombre: string } | null>(null)
+  const [actionToDeleteId, setActionToDeleteId] = useState<string | null>(null)
 
   // ——— Player state ———
   const playerRef = useRef<any>(null)
@@ -150,42 +152,7 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
   // ————————————————————————————————————————————
   // Keyboard shortcuts
   // ————————————————————————————————————————————
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      // Don't fire when typing in inputs/textareas
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return
-
-      switch (e.key) {
-        case 'e':
-        case 'E':
-          e.preventDefault()
-          setResultado('efectiva')
-          break
-        case 'n':
-        case 'N':
-          e.preventDefault()
-          setResultado('no_efectiva')
-          break
-        case 'Enter':
-          e.preventDefault()
-          handleTagAction()
-          break
-        case 'ArrowLeft':
-          e.preventDefault()
-          if (playerRef.current) playerRef.current.currentTime = Math.max(0, playedSeconds - 5)
-          break
-        case 'ArrowRight':
-          e.preventDefault()
-          if (playerRef.current) playerRef.current.currentTime = playedSeconds + 5
-          break
-        case ' ':
-          // Space is handled by the native video player, don't override
-          break
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [playedSeconds, selectedVideo, selectedJugador, selectedMetricaN2, selectedMetricaN1, resultado, selectedZona, nota])
+  // (Movido abajo, después de handleTagAction)
 
   // ————————————————————————————————————————————
   // Tag action handler
@@ -226,6 +193,36 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
     setSavingAction(true)
     try {
+      // 1. Calcular márgenes del clip
+      const codigoN2 = selectedMetricaN2?.codigo ?? 'DEFAULT'
+      const margins = CLIP_MARGINS[codigoN2] ?? CLIP_MARGINS.DEFAULT
+      const clipStartSec = Math.max(0, playedSeconds - margins.preSeconds)
+      const clipEndSec = playedSeconds + margins.postSeconds
+
+      // 2. Calcular valor de la acción
+      const valorAccion = calcularValorAccion(
+        resultado,
+        selectedJugador.posicion,
+        codigoN2,
+        selectedZona
+      )
+
+      // 3. Crear clip lógico (referencia temporal)
+      let clipUrl = selectedVideo.url
+      if (clipUrl) {
+        try {
+          const u = new URL(clipUrl)
+          if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
+            u.searchParams.set('t', Math.floor(clipStartSec).toString())
+          } else {
+            u.hash = `t=${Math.floor(clipStartSec)}`
+          }
+          clipUrl = u.toString()
+        } catch {
+          // Ignorar si no es una URL válida
+        }
+      }
+
       await crearAccion({
         video_id: selectedVideo.id,
         jugador_id: selectedJugador.id,
@@ -236,6 +233,10 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
         resultado,
         zona: selectedZona,
         nota: nota.trim() || null,
+        clip_url: clipUrl,
+        valor_accion: valorAccion,
+        clip_start_sec: Math.round(clipStartSec * 1000) / 1000,
+        clip_end_sec: Math.round(clipEndSec * 1000) / 1000,
       })
 
       const accs = await obtenerAccionesPorVideo(selectedVideo.id)
@@ -261,7 +262,7 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
           )
       }
     } catch (err) {
-      console.error('Error al registrar acción:', err)
+      console.error('Error al registrar acción:', err instanceof Error ? err.message : String(err))
       setTagFeedback('error')
       setTimeout(() => setTagFeedback(null), 2000)
     } finally {
@@ -269,9 +270,50 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
     }
   }, [selectedVideo, selectedJugador, selectedMetricaN2, selectedMetricaN1, metricasN1, playedSeconds, resultado, selectedZona, nota])
 
-  const handleDeleteAction = async (id: string) => {
+  // ————————————————————————————————————————————
+  // Keyboard shortcuts (Manejo de atajos de teclado)
+  // ————————————————————————————————————————————
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't fire when typing in inputs/textareas
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return
+
+      switch (e.key) {
+        case 'e':
+        case 'E':
+          e.preventDefault()
+          setResultado('efectiva')
+          break
+        case 'n':
+        case 'N':
+          e.preventDefault()
+          setResultado('no_efectiva')
+          break
+        case 'Enter':
+          e.preventDefault()
+          handleTagAction()
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          if (playerRef.current) playerRef.current.currentTime = Math.max(0, playedSeconds - 5)
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          if (playerRef.current) playerRef.current.currentTime = playedSeconds + 5
+          break
+        case ' ':
+          // Space is handled by the native video player, don't override
+          break
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [playedSeconds, selectedVideo, selectedJugador, selectedMetricaN2, selectedMetricaN1, resultado, selectedZona, nota, handleTagAction])
+
+  const handleConfirmDeleteAction = async () => {
+    if (!actionToDeleteId) return
     try {
-      await eliminarAccion(id)
+      await eliminarAccion(actionToDeleteId)
       if (selectedVideo) {
         const accs = await obtenerAccionesPorVideo(selectedVideo.id)
         setAcciones(accs)
@@ -291,6 +333,8 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
       }
     } catch (err) {
       console.error('Error al eliminar acción:', err)
+    } finally {
+      setActionToDeleteId(null)
     }
   }
 
@@ -568,6 +612,16 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
                       {/* Right: resultado badge + delete */}
                       <div className="flex items-center gap-2 shrink-0">
+                        {acc.valor_accion !== undefined && acc.valor_accion !== null && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${Number(acc.valor_accion) >= 1 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : Number(acc.valor_accion) >= 0.5 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title="Valor de la acción">
+                            {Number(acc.valor_accion).toFixed(3)}
+                          </span>
+                        )}
+                        {acc.clip_url && (
+                          <div className="w-5 h-5 rounded flex items-center justify-center bg-slate-800/50 border border-slate-700" title="Clip generado (referencia temporal)">
+                            <Film className="w-3 h-3 text-slate-400" />
+                          </div>
+                        )}
                         <Badge
                           variant={acc.resultado === 'efectiva' ? 'success' : 'danger'}
                           size="sm"
@@ -576,7 +630,7 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                         </Badge>
 
                         <button
-                          onClick={() => handleDeleteAction(acc.id)}
+                          onClick={() => setActionToDeleteId(acc.id)}
                           className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                           title="Eliminar acción"
                         >
@@ -802,6 +856,17 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onVideoCreated={handleVideoCreated}
+      />
+
+      {/* ——— Confirm Modal Borrado Acción ——— */}
+      <ConfirmModal
+        isOpen={!!actionToDeleteId}
+        onClose={() => setActionToDeleteId(null)}
+        onConfirm={handleConfirmDeleteAction}
+        title="Eliminar Acción Etiquetada"
+        message="¿Estás seguro de que deseas eliminar esta acción etiquetada? Esta acción se descontará del cálculo de score del jugador."
+        confirmText="Eliminar Acción"
+        variant="danger"
       />
     </div>
   )

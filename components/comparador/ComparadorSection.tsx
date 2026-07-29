@@ -22,9 +22,10 @@ import {
 
 interface ComparadorSectionProps {
   activeModelName: string
+  activeModelId?: string
 }
 
-export function ComparadorSection({ activeModelName }: ComparadorSectionProps) {
+export function ComparadorSection({ activeModelName, activeModelId }: ComparadorSectionProps) {
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
   const [posicionSeleccionada, setPosicionSeleccionada] = useState<Posicion>('MC')
 

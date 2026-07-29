@@ -20,13 +20,14 @@ export async function obtenerAccionesPorVideo(videoId: string): Promise<AccionCo
     .order('minuto_video')
     .order('segundo_video')
 
-  if (error) throw error
+  if (error) throw new Error(`Error Supabase: ${error.message || JSON.stringify(error)}`)
   return (data as AccionConMetrica[]) ?? []
 }
 
 /**
  * Obtiene todas las acciones de un jugador (en todos los vídeos).
  * Útil para la ficha del jugador (lista de clips).
+ * Ordena por valor de acción (las mejores arriba) y luego por fecha.
  */
 export async function obtenerAccionesPorJugador(jugadorId: string): Promise<AccionConMetrica[]> {
   const { data, error } = await supabase
@@ -38,9 +39,10 @@ export async function obtenerAccionesPorJugador(jugadorId: string): Promise<Acci
       metrica_n2:metricas_nivel2(*)
     `)
     .eq('jugador_id', jugadorId)
+    .order('valor_accion', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
 
-  if (error) throw error
+  if (error) throw new Error(`Error Supabase: ${error.message || JSON.stringify(error)}`)
   return (data as AccionConMetrica[]) ?? []
 }
 
@@ -57,7 +59,7 @@ export async function crearAccion(
     .select()
     .single()
 
-  if (error) throw error
+  if (error) throw new Error(`Error Supabase: ${error.message || JSON.stringify(error)}`)
   return data as AccionEtiquetada
 }
 

@@ -40,34 +40,31 @@ export function CustomVideoPlayer({
     onPlayPause?.(false)
   }, [onPlayPause])
 
-  const handleTimeUpdate = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const target = e.currentTarget
-    onProgress?.({
-      playedSeconds: target.currentTime,
-      played: target.duration ? target.currentTime / target.duration : 0,
-    })
+  const handleProgress = useCallback((state: { playedSeconds: number; played: number }) => {
+    onProgress?.(state)
   }, [onProgress])
 
-  const handleDurationChange = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const target = e.currentTarget
-    onDuration?.(target.duration)
+  const handleDurationChange = useCallback((duration: number) => {
+    onDuration?.(duration)
   }, [onDuration])
 
   if (!mounted) {
     return null
   }
 
+  const safeUrl = typeof url === 'string' ? url.trim() : url
+
   return (
     <ReactPlayer
       ref={playerRef}
-      src={url}
+      url={safeUrl}
       width="100%"
       height="100%"
-      controls
+      controls={true}
       playing={playing}
-      onTimeUpdate={handleTimeUpdate}
+      onProgress={handleProgress}
       onDurationChange={handleDurationChange}
-      onCanPlay={onReady}
+      onReady={onReady}
       onPlay={handlePlay}
       onPause={handlePause}
       onError={() => console.warn('[ReactPlayer] Error de media al cargar el vídeo (no crítico)')}

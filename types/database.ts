@@ -127,7 +127,8 @@ export interface MetricaNivel1 {
 
 export interface AccionEtiquetada {
   id: string
-  video_id: string
+  video_id: string | null
+  partido_id?: string | null
   jugador_id: string
   metrica_n1_id: string
   /** Referencia directa a la métrica N2 vinculada (para recálculo de score trazable) */
@@ -138,6 +139,22 @@ export interface AccionEtiquetada {
   zona: ZonaCampo | null
   nota: string | null
   created_at: string
+  /** URL pública del clip en Storage o referencia temporal del vídeo original */
+  clip_url: string | null
+  /** Valor cuantificado: resultado_binario × peso_metrica_n2 × factor_zona */
+  valor_accion: number | null
+  /** Segundo de inicio del clip en el vídeo original */
+  clip_start_sec: number | null
+  /** Segundo de fin del clip en el vídeo original */
+  clip_end_sec: number | null
+  /** Metadatos adicionales estructurados (detalles de la acción, coordenadas) */
+  metadata?: {
+    goalPos?: { x: number; y: number } | null
+    asistenciaId?: string | null
+    tipoRemate?: string | null
+    trayectoria?: { startX: number; startY: number; endX: number; endY: number } | null
+    [key: string]: unknown
+  } | null
 }
 
 /** Acción con la métrica N1 y opcionalmente N2 embebidas */

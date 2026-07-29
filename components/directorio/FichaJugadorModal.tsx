@@ -147,6 +147,10 @@ export function FichaJugadorModal({
 
   // Score recálculo state
   const [recalculando, setRecalculando] = useState(false)
+  const [videoFiltrosUrl, setVideoFiltrosUrl] = useState<string | null>(null)
+
+  // Ref to track if initial seek has been performed
+  const initialSeekDone = useRef(false)
   const [scoreActual, setScoreActual] = useState<number | null>(null)
   const [recalcFeedback, setRecalcFeedback] = useState<'success' | 'error' | null>(null)
   const [desglose, setDesglose] = useState<{ nombreMetrica: string; percentil: number; peso: number; contribucion: number }[]>([])
@@ -1114,7 +1118,12 @@ export function FichaJugadorModal({
               {acciones.map((acc) => (
                 <div
                   key={acc.id}
-                  onClick={() => !isPreviewMode && acc.video?.url && setSelectedAccionToPlay(acc)}
+                  onClick={() => {
+                    if (!isPreviewMode && acc.video?.url) {
+                      initialSeekDone.current = false
+                      setSelectedAccionToPlay(acc)
+                    }
+                  }}
                   className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors ${acc.video?.url && !isPreviewMode ? 'bg-slate-950/80 border-slate-800 cursor-pointer hover:bg-slate-900 hover:border-slate-700' : isPreviewMode ? 'bg-white border-slate-200' : 'bg-slate-950/50 border-slate-900 opacity-70'}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -1146,9 +1155,25 @@ export function FichaJugadorModal({
                     </div>
                   </div>
 
-                  <Badge variant={acc.resultado === 'efectiva' ? 'success' : 'danger'} size="sm">
-                    {acc.resultado === 'efectiva' ? 'Efectiva' : 'No Efectiva'}
-                  </Badge>
+                  <div className="flex items-center gap-3">
+                    {acc.valor_accion !== undefined && acc.valor_accion !== null && (
+                      <span className={`text-xs font-bold px-2 py-1 rounded-md border shadow-sm ${
+                        Number(acc.valor_accion) >= 1 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 
+                        Number(acc.valor_accion) >= 0.5 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 
+                        'bg-slate-100 text-slate-500 border-slate-200'
+                      }`} title="Valor de la acción (Score)">
+                        {Number(acc.valor_accion).toFixed(3)}
+                      </span>
+                    )}
+                    {acc.clip_url && (
+                      <div className="w-7 h-7 rounded flex items-center justify-center bg-indigo-50 border border-indigo-100 text-indigo-500" title="Clip automático generado">
+                        <Video className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                    <Badge variant={acc.resultado === 'efectiva' ? 'success' : 'danger'} size="sm">
+                      {acc.resultado === 'efectiva' ? 'Efectiva' : 'No Efectiva'}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1170,26 +1195,44 @@ export function FichaJugadorModal({
           title={`Acción: ${selectedAccionToPlay.metrica_n2?.nombre ?? selectedAccionToPlay.metrica_n1?.nombre}`}
           size="xl"
         >
-          <div className="aspect-video bg-black rounded-xl overflow-hidden border border-slate-800">
+          <div className="aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 relative">
             <CustomVideoPlayer
               playerRef={videoPlayerRef}
               url={(() => {
-                const url = selectedAccionToPlay.video!.url!
-                const time = Math.max(0, selectedAccionToPlay.minuto_video * 60 + selectedAccionToPlay.segundo_video - 3)
-                try {
-                  const u = new URL(url)
-                  if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
-                    u.searchParams.set('t', time.toString())
-                  } else {
-                    u.hash = `t=${time}`
-                  }
-                  return u.toString()
-                } catch {
-                  return url
-                }
+                const vid = selectedAccionToPlay.video;
+                if (Array.isArray(vid)) return vid[0]?.url;
+                return (vid as any)?.url;
               })()}
               playing={true}
-              onProgress={() => {}}
+              onReady={() => {
+                // Solo log para depuración, el seekTo se hará en onProgress para evitar AbortError
+                console.log('[FichaJugadorModal] onReady disparado')
+              }}
+              onProgress={(state) => {
+                const timeStr = selectedAccionToPlay.clip_start_sec ?? Math.max(0, selectedAccionToPlay.minuto_video * 60 + selectedAccionToPlay.segundo_video - 3)
+                const timeStart = Number(timeStr)
+                
+                // Efectuar el seek solo una vez cuando el reproductor empieza a avanzar
+                if (!initialSeekDone.current && state.playedSeconds < timeStart) {
+                  if (videoPlayerRef.current && videoPlayerRef.current.seekTo) {
+                    videoPlayerRef.current.seekTo(timeStart, 'seconds')
+                    initialSeekDone.current = true
+                  }
+                }
+                const timeEndStr = selectedAccionToPlay.clip_end_sec ?? (Number(selectedAccionToPlay.clip_start_sec || selectedAccionToPlay.minuto_video * 60 + selectedAccionToPlay.segundo_video - 3) + 8)
+                const timeEnd = Number(timeEndStr)
+                // Stop playback and reset to beginning of clip if it reaches the end margin
+                if (state.playedSeconds >= timeEnd) {
+                  if (videoPlayerRef.current) {
+                    const internalPlayer = videoPlayerRef.current.getInternalPlayer?.()
+                    if (internalPlayer && typeof internalPlayer.pauseVideo === 'function') {
+                      internalPlayer.pauseVideo() // YouTube
+                    } else if (internalPlayer && typeof internalPlayer.pause === 'function') {
+                      internalPlayer.pause() // HTML5
+                    }
+                  }
+                }
+              }}
             />
           </div>
           <div className="mt-4 flex items-center justify-between">

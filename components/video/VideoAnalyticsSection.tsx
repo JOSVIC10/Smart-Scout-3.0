@@ -28,9 +28,10 @@ export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null 
     reader.readAsText(file)
   }
 
-  if (!partidoId) {
-    return null
-  }
+  // Allow telemetry testing even if the video is not linked to a partido yet
+  // if (!partidoId) {
+  //   return null
+  // }
 
   return (
     <Card className="mt-4">
@@ -54,9 +55,9 @@ export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null 
               onChange={handleFileUpload}
             />
             <label htmlFor="telemetry-upload">
-              <Button variant="secondary" size="sm" asChild>
-                <span>Seleccionar Archivo</span>
-              </Button>
+              <div className="inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer">
+                Seleccionar Archivo
+              </div>
             </label>
           </div>
         ) : (

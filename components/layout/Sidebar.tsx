@@ -10,10 +10,11 @@ import {
   Grid,
   ShieldAlert,
   ChevronRight,
+  Activity,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
-export type SectionId = 'dashboard' | 'jugadores' | 'video' | 'comparador' | 'modelos' | 'campograma'
+export type SectionId = 'dashboard' | 'jugadores' | 'video' | 'comparador' | 'modelos' | 'campograma' | 'en-directo'
 
 interface NavigationItem {
   id: SectionId
@@ -59,6 +60,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: 'Campograma',
     icon: Grid,
     description: 'Pizarra táctica y alineación',
+  },
+  {
+    id: 'en-directo',
+    label: 'En Directo',
+    icon: Activity,
+    description: 'Registro de acciones en vivo',
   },
 ]
 
