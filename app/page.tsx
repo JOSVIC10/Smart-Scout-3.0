@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect } from 'react'
 import { Sidebar, type SectionId } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
