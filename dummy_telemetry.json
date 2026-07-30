@@ -3,5 +3,41 @@
         "1": 45.2,
         "2": 54.8
     },
-    "total_frames": 12500
+    "total_frames": 15,
+    "fps": 24,
+    "tracking_data": [
+        {
+            "frame": 0,
+            "players": [
+                { "id": 1, "team": 1, "x": 40.0, "y": 50.0, "has_ball": true },
+                { "id": 2, "team": 2, "x": 60.0, "y": 48.0, "has_ball": false }
+            ],
+            "referees": [
+                { "id": 3, "x": 50.0, "y": 20.0 }
+            ],
+            "ball": { "x": 41.0, "y": 51.0 }
+        },
+        {
+            "frame": 1,
+            "players": [
+                { "id": 1, "team": 1, "x": 41.0, "y": 50.5, "has_ball": true },
+                { "id": 2, "team": 2, "x": 59.0, "y": 48.5, "has_ball": false }
+            ],
+            "referees": [
+                { "id": 3, "x": 50.0, "y": 20.0 }
+            ],
+            "ball": { "x": 42.0, "y": 51.5 }
+        },
+        {
+            "frame": 2,
+            "players": [
+                { "id": 1, "team": 1, "x": 42.0, "y": 51.0, "has_ball": true },
+                { "id": 2, "team": 2, "x": 58.0, "y": 49.0, "has_ball": false }
+            ],
+            "referees": [
+                { "id": 3, "x": 50.0, "y": 20.0 }
+            ],
+            "ball": { "x": 43.0, "y": 52.0 }
+        }
+    ]
 }

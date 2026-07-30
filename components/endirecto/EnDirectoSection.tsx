@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Square, RotateCcw, Copy, CheckCircle, Clock, Trash2, X, Film } from 'lucide-react'
+import { Play, Square, RotateCcw, Copy, CheckCircle, Clock, Trash2, X, Film, Plus } from 'lucide-react'
 import { clsx } from 'clsx'
 import { obtenerPartidosDirecto, eliminarAccionDirecto, obtenerAccionesDirectoPorPartido } from '@/lib/supabase/endirecto'
 import type { Partido, AccionEtiquetada, ZonaCampo } from '@/types/database'
 import { RegistroAccionModal } from './RegistroAccionModal'
 import { VincularVideoModal } from './VincularVideoModal'
+import { CrearPartidoModal } from './CrearPartidoModal'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { calcularScore } from '@/lib/scoring/calcularScore'
 
@@ -36,6 +37,7 @@ export function EnDirectoSection({ activeModelId, activeModelName, onScoreUpdate
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
   const [vincularModalOpen, setVincularModalOpen] = useState(false)
+  const [crearPartidoModalOpen, setCrearPartidoModalOpen] = useState(false)
   const [actionToDeleteId, setActionToDeleteId] = useState<string | null>(null)
   const [currentAccionTipo, setCurrentAccionTipo] = useState<AccionTipo>('DUELO')
   const [currentMinute, setCurrentMinute] = useState(0)
@@ -75,6 +77,11 @@ export function EnDirectoSection({ activeModelId, activeModelName, onScoreUpdate
     obtenerAccionesDirectoPorPartido(selectedPartido.id)
       .then(setAcciones)
       .catch(console.error)
+  }
+
+  const handlePartidoCreado = (nuevoPartido: Partido) => {
+    setPartidos(prev => [nuevoPartido, ...prev])
+    setSelectedPartido(nuevoPartido)
   }
 
   const handleActionTap = (tipo: AccionTipo) => {
@@ -266,37 +273,75 @@ ${Object.entries(playerStats)
 
   if (!isMatchActive) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-3">
-          <Clock className="w-6 h-6 text-emerald-500" />
-          Configuración En Directo
-        </h2>
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
+            <Clock className="w-6 h-6 text-emerald-500" />
+            Configuración En Directo
+          </h2>
+          <button
+            onClick={() => setCrearPartidoModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs hover:bg-emerald-600/30 transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Crear Nuevo Partido
+          </button>
+        </div>
         
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-slate-400 mb-2">Selecciona un Partido</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-semibold text-slate-400">Selecciona un Partido</label>
+            <span className="text-xs text-slate-500">{partidos.length} partidos disponibles</span>
+          </div>
           <select 
+            value={selectedPartido?.id || ''}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-200 outline-none focus:border-emerald-500 transition-colors"
             onChange={(e) => {
               const p = partidos.find(p => p.id === e.target.value)
               setSelectedPartido(p || null)
             }}
           >
-            <option value="">-- Seleccionar --</option>
+            <option value="">-- Seleccionar Partido Registrado --</option>
             {partidos.map(p => (
               <option key={p.id} value={p.id}>
-                {p.fecha} - {(p as any).club_local?.nombre} vs {(p as any).club_visitante?.nombre}
+                {p.fecha} - {(p as any).club_local?.nombre || 'Club Local'} vs {(p as any).club_visitante?.nombre || 'Club Visitante'} {p.competicion ? `(${p.competicion})` : ''}
               </option>
             ))}
           </select>
         </div>
 
-        <button 
-          onClick={handleStartMatch}
-          disabled={!selectedPartido}
-          className="w-full py-5 rounded-xl bg-emerald-600 text-white font-bold text-xl hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          <Play className="w-6 h-6" /> Iniciar Partido
-        </button>
+        {selectedPartido && (
+          <div className="mb-6 p-4 rounded-xl bg-slate-950/80 border border-emerald-500/30 flex flex-col gap-1">
+            <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Partido Seleccionado</span>
+            <span className="text-lg font-bold text-white">
+              {(selectedPartido as any).club_local?.nombre || 'Club Local'} vs {(selectedPartido as any).club_visitante?.nombre || 'Club Visitante'}
+            </span>
+            <span className="text-xs text-slate-400">
+              Fecha: {selectedPartido.fecha} {selectedPartido.competicion ? `• ${selectedPartido.competicion}` : ''} {selectedPartido.jornada ? `• Jornada ${selectedPartido.jornada}` : ''}
+            </span>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button 
+            onClick={() => setCrearPartidoModalOpen(true)}
+            className="flex-1 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-base transition-colors flex items-center justify-center gap-2 border border-slate-700"
+          >
+            <Plus className="w-5 h-5 text-emerald-400" /> Crear Partido
+          </button>
+          <button 
+            onClick={handleStartMatch}
+            disabled={!selectedPartido}
+            className="flex-[2] py-4 rounded-xl bg-emerald-600 text-white font-bold text-lg hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50"
+          >
+            <Play className="w-5 h-5 fill-white" /> Iniciar Partido
+          </button>
+        </div>
+
+        <CrearPartidoModal
+          isOpen={crearPartidoModalOpen}
+          onClose={() => setCrearPartidoModalOpen(false)}
+          onPartidoCreado={handlePartidoCreado}
+        />
       </div>
     )
   }

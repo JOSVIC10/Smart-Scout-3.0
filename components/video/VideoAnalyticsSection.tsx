@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Activity, Upload, BarChart2 } from 'lucide-react'
+import { Activity, Upload, BarChart2, Terminal } from 'lucide-react'
+import { TrackingVisualizer } from './TrackingVisualizer'
 
 export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null }) {
   const [telemetry, setTelemetry] = useState<any>(null)
@@ -34,19 +35,31 @@ export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null 
   // }
 
   return (
-    <Card className="mt-4">
-      <CardHeader>
+    <Card className="mt-4 border-slate-800 bg-slate-950">
+      <CardHeader className="border-b border-slate-800/50 pb-4">
         <CardTitle className="text-sm flex items-center gap-2">
           <Activity className="w-4 h-4 text-purple-400" />
-          Telemetría del Partido (YOLO Analytics)
+          Análisis Táctico Avanzado (YOLO)
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="pt-6">
         {!telemetry ? (
-          <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/50">
-            <Upload className="w-8 h-8 text-slate-500 mb-2" />
-            <p className="text-sm font-semibold text-slate-300">Sube el archivo telemetry.json</p>
-            <p className="text-xs text-slate-500 mb-4 text-center">Generado por el pipeline offline (process_video.py)</p>
+          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/30">
+            <Upload className="w-10 h-10 text-slate-500 mb-4" />
+            <h3 className="text-base font-bold text-slate-200 mb-2">Subir Telemetría de Partido</h3>
+            <p className="text-sm text-slate-400 mb-6 text-center max-w-lg">
+              El análisis de tracking 2D requiere procesar el video del partido de forma local usando nuestro pipeline de Inteligencia Artificial.
+            </p>
+            
+            <div className="bg-black/50 p-4 rounded-lg border border-slate-800 mb-8 w-full max-w-xl text-left shadow-inner">
+              <p className="text-[10px] text-slate-500 mb-2 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <Terminal className="w-3 h-3" /> Comando de Ejecución Local
+              </p>
+              <code className="text-xs text-emerald-400 font-mono break-all select-all block bg-slate-950 p-2 rounded border border-slate-800/60">
+                python process_video.py --video ./input.mp4 --output-dir ./output
+              </code>
+            </div>
+            
             <input
               type="file"
               accept=".json"
@@ -55,35 +68,17 @@ export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null 
               onChange={handleFileUpload}
             />
             <label htmlFor="telemetry-upload">
-              <div className="inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer">
-                Seleccionar Archivo
+              <div className="inline-flex items-center justify-center rounded-lg bg-purple-600 hover:bg-purple-700 px-6 py-2.5 text-sm font-bold text-white transition-colors cursor-pointer shadow-lg shadow-purple-900/20">
+                Cargar telemetry.json
               </div>
             </label>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <BarChart2 className="w-4 h-4 text-purple-400" />
-              <span>Total de frames analizados: {telemetry.total_frames}</span>
-            </div>
-            
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Posesión de Balón</h4>
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                {Object.entries(telemetry.possession).map(([teamId, percentage]) => (
-                  <div key={teamId} className="flex-1 text-center">
-                    <p className="text-[10px] text-slate-500 uppercase font-bold">Equipo {teamId}</p>
-                    <p className="text-2xl font-black text-slate-200">
-                      {(percentage as number).toFixed(1)}%
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setTelemetry(null)}>
-                Limpiar datos
+          <div className="space-y-6">
+            <TrackingVisualizer telemetry={telemetry} />
+            <div className="flex justify-end pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setTelemetry(null)} className="text-slate-400 hover:text-slate-200">
+                Cerrar Visualizador
               </Button>
             </div>
           </div>

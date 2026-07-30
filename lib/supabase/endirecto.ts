@@ -11,6 +11,17 @@ export async function obtenerPartidosDirecto(): Promise<Partido[]> {
   return data || []
 }
 
+export async function crearPartidoDirecto(partido: Omit<Partido, 'id' | 'created_at'>): Promise<Partido> {
+  const { data, error } = await supabase
+    .from('partidos')
+    .insert(partido)
+    .select('*, club_local:clubes!partidos_club_local_id_fkey(*), club_visitante:clubes!partidos_club_visitante_id_fkey(*)')
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function crearAccionDirecto(accion: Omit<AccionEtiquetada, 'id' | 'created_at'>): Promise<AccionEtiquetada> {
   const { data, error } = await supabase
     .from('acciones_etiquetadas')

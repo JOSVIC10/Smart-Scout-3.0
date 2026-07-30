@@ -90,11 +90,76 @@ def main():
             frames_t = np.sum(team_ball_control_arr == t)
             possession_stats[str(t)] = (int(frames_t) / int(total_frames)) * 100 if total_frames > 0 else 0
 
+    print("Extracting normalized tracking data...")
+    H, W, _ = video_frames[0].shape
+    fps = 24 # Standard video fps used in save_video
+    tracking_data = []
+    
+    for frame_num in range(len(video_frames)):
+        frame_data = {
+            "frame": frame_num,
+            "players": [],
+            "referees": [],
+            "ball": None
+        }
+        
+        # Players
+        if frame_num < len(tracks['players']):
+            for player_id, player_info in tracks['players'][frame_num].items():
+                bbox = player_info['bbox'] # [x1, y1, x2, y2]
+                x_center = (bbox[0] + bbox[2]) / 2.0
+                y_bottom = bbox[3]
+                
+                # Normalize (0-100)
+                nx = (x_center / W) * 100
+                ny = (y_bottom / H) * 100
+                
+                frame_data["players"].append({
+                    "id": player_id,
+                    "team": player_info.get("team"),
+                    "x": nx,
+                    "y": ny,
+                    "has_ball": player_info.get("has_ball", False)
+                })
+                
+        # Referees
+        if frame_num < len(tracks['referees']):
+            for ref_id, ref_info in tracks['referees'][frame_num].items():
+                bbox = ref_info['bbox']
+                x_center = (bbox[0] + bbox[2]) / 2.0
+                y_bottom = bbox[3]
+                
+                nx = (x_center / W) * 100
+                ny = (y_bottom / H) * 100
+                
+                frame_data["referees"].append({
+                    "id": ref_id,
+                    "x": nx,
+                    "y": ny
+                })
+                
+        # Ball
+        if frame_num < len(tracks['ball']):
+            if 1 in tracks['ball'][frame_num]:
+                bbox = tracks['ball'][frame_num][1]['bbox']
+                x_center = (bbox[0] + bbox[2]) / 2.0
+                y_center = (bbox[1] + bbox[3]) / 2.0
+                
+                nx = (x_center / W) * 100
+                ny = (y_center / H) * 100
+                
+                frame_data["ball"] = {
+                    "x": nx,
+                    "y": ny
+                }
+                
+        tracking_data.append(frame_data)
+
     telemetry_data = {
         "possession": possession_stats,
         "total_frames": int(total_frames),
-        # We can add full tracking data here in the future if we want frontend to draw it
-        # "tracks": tracks 
+        "fps": fps,
+        "tracking_data": tracking_data
     }
 
     print(f"Saving telemetry to {telemetry_path}...")
