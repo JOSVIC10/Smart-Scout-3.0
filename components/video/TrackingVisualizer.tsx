@@ -46,7 +46,7 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
   const totalFrames = trackingData.length > 0 ? trackingData.length : telemetry.total_frames
   
   // Ref for animation loop
-  const requestRef = useRef<number>()
+  const requestRef = useRef<number | undefined>(undefined)
   const lastUpdateRef = useRef<number>(0)
 
   // Interval possession calculation (15 min chunks)

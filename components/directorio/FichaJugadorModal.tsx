@@ -420,7 +420,9 @@ export function FichaJugadorModal({
               <circle cx="50" cy="35" r="7" fill="#10b981" />
               <text x="50" y="38" fill="white" fontSize="6" fontWeight="bold" textAnchor="middle">{jugador.posicion}</text>
             </svg>
-            <p className="text-[9px] text-emerald-500 font-bold uppercase mt-2">{POSICION_DETALLADA_LABELS[jugador.posicion_detallada || ''] || 'PRINCIPAL'}</p>
+            <p className="text-[9px] text-emerald-500 font-bold uppercase mt-2">
+              {(jugador.posicion_detallada && POSICION_DETALLADA_LABELS[jugador.posicion_detallada]) || 'PRINCIPAL'}
+            </p>
           </div>
         </div>
 
@@ -604,7 +606,7 @@ export function FichaJugadorModal({
               <div className="flex gap-2 items-start">
                 <span className="w-4 mt-0.5 text-slate-500"><ThumbsUp className="w-3.5 h-3.5" /></span>
                 <span className="font-semibold text-slate-300 w-16">Potencial:</span>
-                <span className="font-bold text-white flex-1">{edad < 23 && scoreActual && scoreActual > 65 ? 'Alto' : 'Estándar'}</span>
+                <span className="font-bold text-white flex-1">{edad !== null && edad < 23 && scoreActual && scoreActual > 65 ? 'Alto' : 'Estándar'}</span>
               </div>
               <div className="flex gap-2 items-start">
                 <span className="w-4 mt-0.5 text-slate-500"><ThumbsUp className="w-3.5 h-3.5" /></span>
