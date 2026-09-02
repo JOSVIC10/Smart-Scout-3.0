@@ -21,7 +21,7 @@ import { obtenerMetricasJugador } from '@/lib/supabase/metricas'
 import { obtenerValoracionesPorJugador, crearValoracion } from '@/lib/supabase/valoraciones'
 import { obtenerAccionesPorJugador, obtenerEstadisticasPorJugador, type EstadisticaMetricaN2 } from '@/lib/supabase/acciones'
 import { actualizarJugador } from '@/lib/supabase/jugadores'
-import { calcularScore, fiabilidad } from '@/lib/scoring/calcularScore'
+import { calcularScore, fiabilidad, type DetalleMetrica } from '@/lib/scoring/calcularScore'
 import type {
   JugadorConClub,
   MetricaN2Enriquecida,
@@ -136,9 +136,9 @@ export function FichaJugadorModal({
   const videoPlayerRef = useRef<any>(null)
 
   const [recalculando, setRecalculando] = useState(false)
-  const [scoreActual, setScoreActual] = useState<number | null>(null)
-  const [desglose, setDesglose] = useState<{ nombreMetrica: string; percentil: number; peso: number; contribucion: number }[]>([])
-
+  const [scoreActual, setScoreActual] = useState<number | null>(jugador?.score_global ?? null)
+  const [desglose, setDesglose] = useState<DetalleMetrica[]>([])
+  const [fiabilidadActual, setFiabilidadActual] = useState<number>(0)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
