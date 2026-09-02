@@ -57,7 +57,7 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
   const getAlertas = (jugador: JugadorConClub) => {
     const alertas = []
     const edad = calcularEdad(jugador.fecha_nacimiento)
-    if (edad >= 30) alertas.push('Edad Crítica (>30)')
+    if (edad !== null && edad >= 30) alertas.push('Edad Crítica (>30)')
     if (jugador.fin_contrato && (jugador.fin_contrato.includes('2026') || jugador.fin_contrato.includes('2027'))) {
       alertas.push('Fin de Contrato Próximo')
     }
