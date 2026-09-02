@@ -40,7 +40,7 @@ export function MobileNav({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-100">Smart Scout 3.0</h2>
-              <p className="text-[10px] text-slate-400">INEFC Lleida – UdL</p>
+              <p className="text-[10px] text-slate-400">Scouting Semiprofesional</p>
             </div>
           </div>
           <button

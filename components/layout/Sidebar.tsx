@@ -87,7 +87,7 @@ export function Sidebar({ activeSection, onSelectSection, activeModelName = 'Pos
           <h1 className="text-base font-bold text-slate-100 tracking-tight flex items-center gap-1.5">
             Smart Scout <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v3.0</span>
           </h1>
-          <p className="text-[11px] text-slate-400 font-medium">INEFC Lleida – UdL</p>
+          <p className="text-[11px] text-slate-400 font-medium">Scouting Semiprofesional</p>
         </div>
       </div>
 

@@ -5,3 +5,4 @@ numpy
 pandas
 supervision
 notebook
+trackers

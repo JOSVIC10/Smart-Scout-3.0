@@ -74,6 +74,14 @@ export interface Jugador {
   minutos_jugados: number
   partidos_analizados: number
   score_global: number | null
+  valor_mercado?: string | null
+  fin_contrato?: string | null
+  estilo_juego?: string | null
+  est_partidos?: number | null
+  est_goles?: number | null
+  est_asistencias?: number | null
+  est_amarillas?: number | null
+  est_rojas?: number | null
   created_at: string
   updated_at: string
 }

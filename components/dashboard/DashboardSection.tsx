@@ -97,7 +97,7 @@ export function DashboardSection({
               <Badge variant="primary" size="sm">
                 Prototipo TFM
               </Badge>
-              <span className="text-xs text-slate-400">INEFC Lleida – UdL</span>
+              <span className="text-xs text-slate-400">Scouting Semiprofesional</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-100">
               Panel de Control — Scouting Semiprofesional

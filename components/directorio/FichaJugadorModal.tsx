@@ -59,6 +59,9 @@ import {
 } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { supabase } from '@/lib/supabase/client'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { Edit2 } from 'lucide-react'
+import { EditarAtributosForm } from './EditarAtributosModal'
 
 interface FichaJugadorModalProps {
   jugador: JugadorConClub | null
@@ -110,9 +113,13 @@ export function FichaJugadorModal({
 }: FichaJugadorModalProps) {
   const [localActiveModelId, setLocalActiveModelId] = useState<string | undefined>(activeModelId)
   const [modelosDisponibles, setModelosDisponibles] = useState<ModeloJuego[]>([])
+  
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
 
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [deletingPlayer, setDeletingPlayer] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   
   useEffect(() => {
     if (activeModelId) setLocalActiveModelId(activeModelId)
@@ -312,10 +319,54 @@ export function FichaJugadorModal({
   if (!jugador) return null
   const edad = calcularEdad(jugador.fecha_nacimiento)
 
+  if (showEditModal) {
+    return (
+      <Modal isOpen={isOpen} onClose={() => setShowEditModal(false)} title="Modo Edición" size="4xl">
+        <EditarAtributosForm
+          jugador={jugador}
+          valoracionActual={valoraciones[0]}
+          metricas={metricas}
+          onCancel={() => setShowEditModal(false)}
+          onSave={(metricasEditadas) => {
+            setShowEditModal(false)
+            // Actualizar métricas localmente para que el radar reaccione
+            setMetricas(prev => prev.map(m => {
+              if (metricasEditadas[m.codigo] !== undefined) {
+                return { ...m, percentil: metricasEditadas[m.codigo] }
+              }
+              return m
+            }))
+            // Actualizar desglose localmente para que el radar (que usa desglose) reaccione
+            setDesglose(prev => prev.map(d => {
+              if (metricasEditadas[d.codigoMetrica] !== undefined) {
+                return { 
+                  ...d, 
+                  percentil: metricasEditadas[d.codigoMetrica],
+                  contribucion: metricasEditadas[d.codigoMetrica] * d.peso 
+                }
+              }
+              return d
+            }))
+          }}
+        />
+      </Modal>
+    )
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Player Card" size="4xl">
-      {/* Botones Flotantes (No imprimibles) */}
       <div className="absolute top-4 right-12 flex items-center gap-2 print:hidden z-10">
+        {isAdmin && (
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Edit2 className="w-4 h-4 text-emerald-400" />}
+            onClick={() => setShowEditModal(true)}
+            className="border-emerald-500/30 bg-slate-900 text-emerald-400 hover:bg-emerald-500/10"
+          >
+            Editar Atributos
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"
@@ -430,15 +481,15 @@ export function FichaJugadorModal({
         <div className="flex flex-wrap md:flex-nowrap items-center bg-slate-900 border border-slate-800 rounded-lg p-4 gap-6 mb-6">
           <div className="flex-1 min-w-[120px]">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Valor de Mercado</p>
-            <p className="text-xl font-bold text-emerald-400">N/D</p>
+            <p className="text-xl font-bold text-emerald-400">{jugador.valor_mercado || 'N/D'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Fin de Contrato</p>
-            <p className="text-sm font-semibold">30 JUN 2027</p>
+            <p className="text-sm font-semibold">{jugador.fin_contrato || 'N/D'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Estilo de Juego</p>
-            <p className="text-sm font-semibold truncate" title="Rápido, Profundo, Finalizador">Rápido, Profundo, Finalizador</p>
+            <p className="text-sm font-semibold truncate" title={jugador.estilo_juego || 'Sin definir'}>{jugador.estilo_juego || 'Sin definir'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6 flex items-center justify-between">
             <div>
@@ -479,30 +530,28 @@ export function FichaJugadorModal({
           </div>
 
           {/* COL 2: Season Stats */}
-          <div className="flex flex-col bg-slate-900 border border-slate-800 rounded-lg p-4">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Temporada 2026</h3>
-            <div className="grid grid-cols-5 gap-2 text-center border-b border-slate-800 pb-4 mb-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 print:border-slate-300">
+            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Temporada 2026</h3>
+            <div className="grid grid-cols-5 gap-4 text-center mb-8">
               <div>
-                <p className="text-[9px] text-slate-500 uppercase mb-1">PJ</p>
-                <p className="font-bold text-lg">{jugador.partidos_analizados}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">PJ</p>
+                <p className="text-2xl font-black">{jugador.est_partidos ?? jugador.partidos_analizados}</p>
               </div>
               <div>
-                <p className="text-[9px] text-slate-500 uppercase mb-1">Min</p>
-                <p className="font-bold text-lg">{jugador.minutos_jugados}'</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Min</p>
+                <p className="text-2xl font-black">{jugador.est_minutos ?? jugador.minutos_jugados}'</p>
               </div>
               <div>
-                <p className="text-[9px] text-slate-500 uppercase mb-1">Goles</p>
-                <p className="font-bold text-lg">{goles}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Goles</p>
+                <p className="text-2xl font-black">{jugador.est_goles ?? 0}</p>
               </div>
               <div>
-                <p className="text-[9px] text-slate-500 uppercase mb-1">Asist</p>
-                <p className="font-bold text-lg">{asistencias}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Asist</p>
+                <p className="text-2xl font-black">{jugador.est_asistencias ?? 0}</p>
               </div>
               <div>
-                <p className="text-[9px] text-slate-500 uppercase mb-1">Tarjetas</p>
-                <div className="flex items-center justify-center gap-1 font-bold">
-                  <span className="text-yellow-500">{tarjetasAmarillas}</span> / <span className="text-red-500">{tarjetasRojas}</span>
-                </div>
+                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Tarjetas</p>
+                <p className="text-2xl font-black text-amber-500">{jugador.est_amarillas ?? 0} <span className="text-slate-600">/</span> <span className="text-red-500">{jugador.est_rojas ?? 0}</span></p>
               </div>
             </div>
 
@@ -751,7 +800,7 @@ export function FichaJugadorModal({
         </Modal>
       )}
 
-      {/* Estilos para impresión */}
+      {/* Estilos para impresión (Dark Mode UI Capture) */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page { size: A4 portrait; margin: 0; }
@@ -760,8 +809,8 @@ export function FichaJugadorModal({
             overflow: hidden !important;
             height: 100vh !important;
             width: 100vw !important;
-            background: #020617 !important; /* bg-slate-950 */
-            color: #e2e8f0 !important; /* text-slate-200 */
+            background: #020617 !important;
+            color: #e2e8f0 !important;
             margin: 0 !important;
             padding: 0 !important;
             -webkit-print-color-adjust: exact !important;
@@ -773,11 +822,11 @@ export function FichaJugadorModal({
             position: fixed !important; 
             left: 0 !important; 
             top: 0 !important; 
-            width: 100vw !important; 
-            height: 100vh !important;
+            width: 100% !important; 
+            height: 100% !important;
             overflow: hidden !important; 
             margin: 0 !important; 
-            padding: 10mm !important; 
+            padding: 5mm !important; 
             background: #020617 !important;
             color: #e2e8f0 !important;
             -webkit-print-color-adjust: exact !important;
@@ -786,16 +835,22 @@ export function FichaJugadorModal({
             z-index: 999999 !important;
             display: flex !important;
             flex-direction: column !important;
+            zoom: 0.65;
           }
           .print-area * { visibility: visible !important; }
+          .flex-1 { flex: 1 1 auto !important; }
+          .recharts-wrapper, .recharts-surface { 
+            width: 100% !important; 
+            height: 100% !important; 
+          }
         }
       `}} />
       <ConfirmModal
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
         onConfirm={handleConfirmDeletePlayer}
-        title="Confirmar eliminación de jugador"
-        message={`¿Estás seguro de que deseas eliminar la ficha de ${jugador.nombre} ${jugador.apellidos}?`}
+        title="Eliminar Jugador"
+        description={`¿Estás seguro de que deseas eliminar a ${jugador.nombre} ${jugador.apellidos}? Esta acción no se puede deshacer y eliminará también sus acciones etiquetadas.`}
         confirmText="Eliminar Jugador"
         loading={deletingPlayer}
       />
