@@ -166,6 +166,52 @@ export async function calcularScore(
 
   if (aErr) throw aErr
 
+  // If there are no actions for this player, it's likely a scouted player with seeded metrics.
+  // Instead of recalculating and wiping them out, we use their existing metrics.
+  if (!acciones || acciones.length === 0) {
+    const { data: metricasExistentes } = await supabase
+      .from('jugador_metricas_n2')
+      .select('metrica_n2_id, percentil, muestra, metrica_n2:metricas_nivel2(codigo, nombre)')
+      .eq('jugador_id', jugadorId)
+      .in('metrica_n2_id', metricaIds)
+
+    if (metricasExistentes && metricasExistentes.length > 0) {
+      let scoreFinal = 0
+      const desglose: DetalleMetrica[] = []
+      
+      for (const m of metricasExistentes) {
+        const pesoInfo = ponderacionesActivas.find(p => p.metrica_n2_id === m.metrica_n2_id)
+        const peso = pesoInfo?.peso ?? 0
+        const percentil = m.percentil ?? 0
+        const contribucion = percentil * peso
+
+        scoreFinal += contribucion
+        desglose.push({
+          metrica_n2_id: m.metrica_n2_id,
+          codigoMetrica: (m.metrica_n2 as any).codigo,
+          nombreMetrica: (m.metrica_n2 as any).nombre,
+          valorReal: percentil / 100, // mock
+          percentil: percentil,
+          peso: peso,
+          contribucion: contribucion,
+          muestra: m.muestra
+        })
+      }
+
+      const scoreRedondeado = Math.round(scoreFinal * 10) / 10
+      await supabase.from('jugadores').update({ score_global: scoreRedondeado }).eq('id', jugadorId)
+      
+      return {
+        score: scoreRedondeado,
+        desglose: desglose.sort((a, b) => b.contribucion - a.contribucion),
+        fortalezas: desglose.filter(d => d.percentil > 75).map(d => d.nombreMetrica).slice(0, 3),
+        debilidades: desglose.filter(d => d.percentil < 40).map(d => d.nombreMetrica).slice(0, 3),
+        partidos_analizados: partidosAnalizados,
+        fiabilidad: fiabilidad(partidosAnalizados)
+      }
+    }
+  }
+
   // Agrupar por metrica_n2_id y sumar valor de acciones como bonus
   let bonusValorAccion = 0
   const accionesPorMetrica = new Map<string, { total: number; efectivas: number }>()
