@@ -857,7 +857,7 @@ export function FichaJugadorModal({
         onClose={() => setShowConfirmDelete(false)}
         onConfirm={handleConfirmDeletePlayer}
         title="Eliminar Jugador"
-        description={`¿Estás seguro de que deseas eliminar a ${jugador.nombre} ${jugador.apellidos}? Esta acción no se puede deshacer y eliminará también sus acciones etiquetadas.`}
+        message={`¿Estás seguro de que deseas eliminar a ${jugador.nombre} ${jugador.apellidos}? Esta acción no se puede deshacer y eliminará también sus acciones etiquetadas.`}
         confirmText="Eliminar Jugador"
         loading={deletingPlayer}
       />
