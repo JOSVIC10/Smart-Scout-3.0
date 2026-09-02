@@ -229,6 +229,13 @@ export function DirectorioSection({
           setJugadores(prev =>
             prev.map(j => j.id === jugadorId ? { ...j, score_global: nuevoScore } : j)
           )
+          setSelectedPlayer(prev => prev && prev.id === jugadorId ? { ...prev, score_global: nuevoScore } : prev)
+        }}
+        onPlayerUpdated={(jugadorActualizado) => {
+          setJugadores(prev =>
+            prev.map(j => j.id === jugadorActualizado.id ? jugadorActualizado : j)
+          )
+          setSelectedPlayer(jugadorActualizado)
         }}
         onPlayerDeleted={(jugadorId) => {
           setJugadores(prev => prev.filter(j => j.id !== jugadorId))

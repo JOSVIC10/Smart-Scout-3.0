@@ -14,7 +14,7 @@ interface EditarAtributosFormProps {
   jugador: JugadorConClub
   valoracionActual?: Valoracion
   metricas: MetricaN2Enriquecida[]
-  onSave: (metricasEditadas: Record<string, number>) => void
+  onSave: (metricasEditadas: Record<string, number>, jugadorActualizado: Partial<JugadorConClub>) => void
 }
 
 export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metricas, onSave }: EditarAtributosFormProps) {
@@ -131,10 +131,13 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
         }
       }
 
-      onSave(metricasEdit)
+      onSave(metricasEdit, updatesJugador)
     } catch (err: any) {
-      console.error(err)
-      setError('Hubo un error al guardar los atributos: ' + err.message)
+      // Usamos console.warn en lugar de error para que Next.js no saque el popup de error gigante
+      console.warn('Detalles del error:', err)
+      const msg = (err && err.message) ? err.message : JSON.stringify(err)
+      const details = (err && err.details) ? ` - ${err.details}` : ''
+      setError(`Error: ${msg}${details} (Code: ${err?.code})`)
     } finally {
       setLoading(false)
     }
@@ -146,11 +149,6 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
         <h2 className="text-xl font-bold">Editar Atributos - {jugador.nombre} {jugador.apellidos}</h2>
       </div>
       <form onSubmit={handleSave} className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-sm">
-            {error}
-          </div>
-        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Col 1: Datos Básicos */}
@@ -291,11 +289,18 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-slate-800">
-          <Button variant="outline" onClick={onCancel} type="button">Cancelar</Button>
-          <Button variant="primary" type="submit" disabled={loading} className="bg-emerald-600">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar Cambios'}
-          </Button>
+        <div className="flex flex-col gap-2 pt-4 border-t border-slate-800">
+          {error && (
+            <div className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-sm mb-2">
+              {error}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onCancel} type="button">Cancelar</Button>
+            <Button variant="primary" type="submit" disabled={loading} className="bg-emerald-600">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar Cambios'}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

@@ -70,6 +70,7 @@ interface FichaJugadorModalProps {
   activeModelName: string
   activeModelId?: string
   onScoreUpdated?: (jugadorId: string, nuevoScore: number) => void
+  onPlayerUpdated?: (jugadorActualizado: JugadorConClub) => void
   onPlayerDeleted?: (jugadorId: string) => void
 }
 
@@ -109,6 +110,7 @@ export function FichaJugadorModal({
   activeModelName,
   activeModelId,
   onScoreUpdated,
+  onPlayerUpdated,
   onPlayerDeleted,
 }: FichaJugadorModalProps) {
   const [localActiveModelId, setLocalActiveModelId] = useState<string | undefined>(activeModelId)
@@ -327,7 +329,7 @@ export function FichaJugadorModal({
           valoracionActual={valoraciones[0]}
           metricas={metricas}
           onCancel={() => setShowEditModal(false)}
-          onSave={(metricasEditadas) => {
+          onSave={(metricasEditadas, updatesJugador) => {
             setShowEditModal(false)
             // Actualizar métricas localmente para que el radar reaccione
             setMetricas(prev => prev.map(m => {
@@ -336,6 +338,11 @@ export function FichaJugadorModal({
               }
               return m
             }))
+            // Propagar el jugador actualizado hacia arriba (DirectorioSection) para que la ficha y la tabla se repinten
+            if (onPlayerUpdated && jugador) {
+              onPlayerUpdated({ ...jugador, ...updatesJugador } as JugadorConClub)
+            }
+            
             // Actualizar desglose localmente para que el radar (que usa desglose) reaccione
             setDesglose(prev => prev.map(d => {
               if (metricasEditadas[d.codigoMetrica] !== undefined) {

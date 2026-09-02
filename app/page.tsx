@@ -7,6 +7,7 @@ import { Sidebar, type SectionId } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { DashboardSection } from '@/components/dashboard/DashboardSection'
+import { PlanificadorSection } from '@/components/planificador/PlanificadorSection'
 import { DirectorioSection } from '@/components/directorio/DirectorioSection'
 import { VideoSection } from '@/components/video/VideoSection'
 import { ComparadorSection } from '@/components/comparador/ComparadorSection'
@@ -112,6 +113,13 @@ export default function Home() {
               onNavigate={setActiveSection}
               onSelectPlayer={handleSelectPlayerFromDashboard}
               activeModelName={activeModelName}
+            />
+          )}
+
+          {activeSection === 'planificador' && (
+            <PlanificadorSection
+              activeModelName={activeModelName}
+              activeModelId={activeModel.id}
             />
           )}
 

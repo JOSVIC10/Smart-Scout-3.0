@@ -11,10 +11,11 @@ import {
   ShieldAlert,
   ChevronRight,
   Activity,
+  Briefcase,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
-export type SectionId = 'dashboard' | 'jugadores' | 'video' | 'comparador' | 'modelos' | 'campograma' | 'en-directo'
+export type SectionId = 'dashboard' | 'planificador' | 'jugadores' | 'video' | 'comparador' | 'modelos' | 'campograma' | 'en-directo'
 
 interface NavigationItem {
   id: SectionId
@@ -30,6 +31,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: 'Panel de Control',
     icon: LayoutDashboard,
     description: 'Resumen ejecutivo y KPIs del club',
+  },
+  {
+    id: 'planificador',
+    label: 'Planificación',
+    icon: Briefcase,
+    description: 'Gestión de plantilla y shadow squad',
   },
   {
     id: 'jugadores',

@@ -78,6 +78,7 @@ export interface Jugador {
   fin_contrato?: string | null
   estilo_juego?: string | null
   est_partidos?: number | null
+  est_minutos?: number | null
   est_goles?: number | null
   est_asistencias?: number | null
   est_amarillas?: number | null
