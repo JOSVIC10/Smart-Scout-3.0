@@ -40,6 +40,64 @@ export async function obtenerJugadores(filtros?: Partial<FiltrosJugador>): Promi
 }
 
 /**
+ * Obtiene todos los jugadores recalculando dinámicamente su score_global
+ * en función de las ponderaciones de métricas del modelo de juego activo.
+ */
+export async function obtenerJugadoresConScoreModelo(
+  filtros?: Partial<FiltrosJugador>,
+  modeloId?: string
+): Promise<JugadorConClub[]> {
+  const jugadores = await obtenerJugadores(filtros)
+  if (!modeloId) return jugadores
+
+  try {
+    const [{ data: ponds }, { data: jugadorMets }] = await Promise.all([
+      supabase.from('ponderaciones_modelo').select('posicion, metrica_n2_id, peso').eq('modelo_id', modeloId),
+      supabase.from('jugador_metricas_n2').select('jugador_id, metrica_n2_id, percentil')
+    ])
+
+    if (!ponds || ponds.length === 0 || !jugadorMets || jugadorMets.length === 0) {
+      return jugadores
+    }
+
+    const jmMap = new Map<string, number>()
+    for (const m of jugadorMets) {
+      jmMap.set(`${m.jugador_id}_${m.metrica_n2_id}`, m.percentil)
+    }
+
+    const pondsPorPos = new Map<string, { metrica_n2_id: string; peso: number }[]>()
+    for (const p of ponds) {
+      if (!pondsPorPos.has(p.posicion)) pondsPorPos.set(p.posicion, [])
+      pondsPorPos.get(p.posicion)!.push({ metrica_n2_id: p.metrica_n2_id, peso: Number(p.peso) })
+    }
+
+    return jugadores.map((j) => {
+      const posPonds = pondsPorPos.get(j.posicion)
+      if (!posPonds || posPonds.length === 0) return j
+
+      let total = 0
+      let weightSum = 0
+      for (const p of posPonds) {
+        const perc = jmMap.get(`${j.id}_${p.metrica_n2_id}`)
+        if (perc !== undefined) {
+          total += perc * p.peso
+          weightSum += p.peso
+        }
+      }
+
+      if (weightSum > 0) {
+        const dynamicScore = Math.round((total / weightSum) * 10) / 10
+        return { ...j, score_global: dynamicScore }
+      }
+      return j
+    })
+  } catch (err) {
+    console.warn('Error calculando score dinámico por modelo:', err)
+    return jugadores
+  }
+}
+
+/**
  * Obtiene un jugador por ID con datos del club embebidos.
  */
 export async function obtenerJugadorPorId(id: string): Promise<JugadorConClub | null> {

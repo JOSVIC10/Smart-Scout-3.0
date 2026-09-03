@@ -15,7 +15,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { obtenerJugadores } from '@/lib/supabase/jugadores'
+import { obtenerJugadores, obtenerJugadoresConScoreModelo } from '@/lib/supabase/jugadores'
 import { contarPartidos } from '@/lib/supabase/partidos'
 import { POSICION_LABELS, POSICION_SHORT, clasePercentil } from '@/lib/constants'
 import type { JugadorConClub, Posicion } from '@/types/database'
@@ -34,12 +34,14 @@ interface DashboardSectionProps {
   onNavigate: (section: SectionId) => void
   onSelectPlayer: (jugador: JugadorConClub) => void
   activeModelName: string
+  activeModelId?: string
 }
 
 export function DashboardSection({
   onNavigate,
   onSelectPlayer,
   activeModelName,
+  activeModelId,
 }: DashboardSectionProps) {
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
   const [totalPartidos, setTotalPartidos] = useState<number>(0)
@@ -49,7 +51,7 @@ export function DashboardSection({
     async function loadData() {
       try {
         const [jugs, nPartidos] = await Promise.all([
-          obtenerJugadores(),
+          obtenerJugadoresConScoreModelo(undefined, activeModelId),
           contarPartidos(),
         ])
         setJugadores(jugs)
@@ -61,7 +63,7 @@ export function DashboardSection({
       }
     }
     loadData()
-  }, [])
+  }, [activeModelId])
 
   // KPI Calculations
   const totalJugadores = jugadores.length

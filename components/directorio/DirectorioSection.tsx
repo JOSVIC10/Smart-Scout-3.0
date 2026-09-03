@@ -1,15 +1,16 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Search, Plus, Users, Shield, SlidersHorizontal } from 'lucide-react'
+import { Search, Plus, Users, Shield, SlidersHorizontal, Link2, Sparkles } from 'lucide-react'
 import { PlayerCard } from './PlayerCard'
 import { FichaJugadorModal } from './FichaJugadorModal'
 import { AddPlayerModal } from './AddPlayerModal'
 import { AddClubModal } from './AddClubModal'
+import { ImportPlayerModal } from './ImportPlayerModal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
-import { obtenerJugadores } from '@/lib/supabase/jugadores'
+import { obtenerJugadores, obtenerJugadoresConScoreModelo } from '@/lib/supabase/jugadores'
 import { obtenerClubes } from '@/lib/supabase/clubes'
 import type { JugadorConClub, Posicion, Categoria, Club, Jugador } from '@/types/database'
 import { POSICION_LABELS } from '@/lib/constants'
@@ -39,11 +40,13 @@ export function DirectorioSection({
   const [clubFilter, setClubFilter] = useState<string>('')
   const [categoriaFilter, setCategoriaFilter] = useState<Categoria | ''>('')
   const [scoreMinFilter, setScoreMinFilter] = useState<string>('')
+  const [soloOportunidades, setSoloOportunidades] = useState(false)
 
   // Modals state
   const [selectedPlayer, setSelectedPlayer] = useState<JugadorConClub | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isAddClubModalOpen, setIsAddClubModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   const miClub = clubes.find(c => c.nombre.toLowerCase().includes('grama')) ?? clubes[0]
 
@@ -54,7 +57,10 @@ export function DirectorioSection({
   const cargarDatos = async () => {
     setLoading(true)
     try {
-      const [jugs, clbs] = await Promise.all([obtenerJugadores(), obtenerClubes()])
+      const [jugs, clbs] = await Promise.all([
+        obtenerJugadoresConScoreModelo(undefined, activeModelId),
+        obtenerClubes()
+      ])
       // Aplicar overrides de scores recientes si los hay
       const jugsConOverrides = scoreOverrides && scoreOverrides.size > 0
         ? jugs.map(j => scoreOverrides.has(j.id) ? { ...j, score_global: scoreOverrides.get(j.id)! } : j)
@@ -110,8 +116,13 @@ export function DirectorioSection({
     const matchClub = !clubFilter || j.club_id === clubFilter
     const matchCategoria = !categoriaFilter || j.categoria === categoriaFilter
     const matchScore = !scoreMinFilter || (j.score_global ?? 0) >= parseInt(scoreMinFilter, 10)
+    const matchOportunidad = !soloOportunidades || (
+      (j.fin_contrato && j.fin_contrato.includes('2026')) ||
+      (j.fin_contrato && j.fin_contrato.toLowerCase().includes('libre')) ||
+      !j.club_id
+    )
 
-    return matchTipo && matchBusqueda && matchPosicion && matchClub && matchCategoria && matchScore
+    return matchTipo && matchBusqueda && matchPosicion && matchClub && matchCategoria && matchScore && matchOportunidad
   })
 
   const posicionOptions = Object.entries(POSICION_LABELS).map(([val, label]) => ({
@@ -132,9 +143,15 @@ export function DirectorioSection({
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-lg font-bold text-slate-100">
-                Directorio <span className="text-xs text-slate-400 font-normal">({jugadoresFiltrados.length})</span>
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                Directorio de Jugadores
               </h2>
+              <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                <span>Scores ponderados según modelo:</span>
+                <span className="text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 font-mono">
+                  {activeModelName}
+                </span>
+              </p>
             </div>
 
             {/* Selector de tipo: Observados / Todos / Plantilla */}
@@ -175,6 +192,23 @@ export function DirectorioSection({
                 Todos
               </button>
             </div>
+
+            {/* Chip de Oportunidades 2026 (Coste Cero) */}
+            <button
+              type="button"
+              onClick={() => setSoloOportunidades(prev => !prev)}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
+                soloOportunidades
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-amber-500/10'
+                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-amber-400 hover:border-amber-500/30'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              ⚡ Oportunidades 2026
+              {soloOportunidades && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse ml-0.5" />
+              )}
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -185,6 +219,14 @@ export function DirectorioSection({
               onClick={() => setIsAddClubModalOpen(true)}
             >
               Nuevo Club
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Link2 className="w-4 h-4 text-emerald-400" />}
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              Añadir por Enlace
             </Button>
             <Button
               variant="primary"
@@ -306,6 +348,13 @@ export function DirectorioSection({
         isOpen={isAddClubModalOpen}
         onClose={() => setIsAddClubModalOpen(false)}
         onClubCreated={handleClubCreated}
+      />
+
+      {/* Import Player by URL Modal */}
+      <ImportPlayerModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onPlayerCreated={handlePlayerCreated}
       />
     </div>
   )

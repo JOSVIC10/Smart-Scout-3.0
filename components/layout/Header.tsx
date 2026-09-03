@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Search, Plus, Menu, Sliders, ChevronDown, Check } from 'lucide-react'
+import { Search, Plus, Menu, Sliders, ChevronDown, Check, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import type { SectionId } from './Sidebar'
 import { NAVIGATION_ITEMS } from './Sidebar'
@@ -17,6 +17,7 @@ interface HeaderProps {
   onChangeActiveModel?: (modelo: ModeloJuego) => void
   globalSearch?: string
   onGlobalSearchChange?: (val: string) => void
+  onOpenAiScout?: () => void
 }
 
 export function Header({
@@ -29,6 +30,7 @@ export function Header({
   onChangeActiveModel,
   globalSearch = '',
   onGlobalSearchChange,
+  onOpenAiScout,
 }: HeaderProps) {
   const currentNav = NAVIGATION_ITEMS.find((n) => n.id === activeSection)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -163,6 +165,21 @@ export function Header({
             <span className="text-slate-400">Modelo:</span>
             <span className="text-emerald-400 font-semibold truncate max-w-[120px]">{activeModelName}</span>
           </div>
+        )}
+
+        {/* AI Scout Button */}
+        {onOpenAiScout && (
+          <button
+            type="button"
+            onClick={onOpenAiScout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/15 via-slate-900 to-sky-500/15 hover:from-emerald-500/25 hover:to-sky-500/25 border border-emerald-500/30 hover:border-emerald-500/50 text-xs font-bold text-emerald-300 shadow-sm transition-all group"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span className="hidden sm:inline">AI Scout</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-400 hidden lg:inline font-mono">
+              Ctrl K
+            </span>
+          </button>
         )}
 
         {/* Add Player */}

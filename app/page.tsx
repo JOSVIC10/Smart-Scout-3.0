@@ -14,7 +14,10 @@ import { ComparadorSection } from '@/components/comparador/ComparadorSection'
 import { ModelosSection } from '@/components/modelos/ModelosSection'
 import { CampogramaSection } from '@/components/campograma/CampogramaSection'
 import { EnDirectoSection } from '@/components/endirecto/EnDirectoSection'
+import { AiScoutModal } from '@/components/ai/AiScoutModal'
+import { FichaJugadorModal } from '@/components/directorio/FichaJugadorModal'
 import { obtenerModelos } from '@/lib/supabase/modelos'
+import { obtenerJugadoresConScoreModelo } from '@/lib/supabase/jugadores'
 import type { ModeloJuego, JugadorConClub } from '@/types/database'
 
 /** Modelo de juego por defecto (Posesión) mientras cargan los reales */
@@ -48,6 +51,30 @@ export default function Home() {
   }
 
   const activeModelName = `${activeModel.nombre} (${activeModel.formacion ?? '4-3-3'})`
+
+  // AI Scout Assistant State
+  const [isAiScoutOpen, setIsAiScoutOpen] = useState(false)
+  const [allPlayersForAi, setAllPlayersForAi] = useState<JugadorConClub[]>([])
+  const [selectedPlayerFromAi, setSelectedPlayerFromAi] = useState<JugadorConClub | null>(null)
+
+  // Cargar jugadores con scoring del modelo activo para la IA
+  useEffect(() => {
+    obtenerJugadoresConScoreModelo(undefined, activeModel.id)
+      .then(setAllPlayersForAi)
+      .catch((err) => console.warn('Error loading players for AI:', err))
+  }, [activeModel.id])
+
+  // Atajo de teclado global Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setIsAiScoutOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Load all models from Supabase on mount
   useEffect(() => {
@@ -104,6 +131,7 @@ export default function Home() {
           onChangeActiveModel={setActiveModel}
           globalSearch={globalSearch}
           onGlobalSearchChange={setGlobalSearch}
+          onOpenAiScout={() => setIsAiScoutOpen(true)}
         />
 
         {/* Section View Renderer */}
@@ -113,6 +141,7 @@ export default function Home() {
               onNavigate={setActiveSection}
               onSelectPlayer={handleSelectPlayerFromDashboard}
               activeModelName={activeModelName}
+              activeModelId={activeModel.id}
             />
           )}
 
@@ -169,6 +198,31 @@ export default function Home() {
           )}
         </main>
       </div>
+
+      {/* Modal Asistente de IA */}
+      <AiScoutModal
+        isOpen={isAiScoutOpen}
+        onClose={() => setIsAiScoutOpen(false)}
+        jugadores={allPlayersForAi}
+        activeModelName={activeModelName}
+        activeModelId={activeModel.id}
+        onSelectPlayer={(j) => setSelectedPlayerFromAi(j)}
+      />
+
+      {/* Ficha Jugador abierta desde IA */}
+      {selectedPlayerFromAi && (
+        <FichaJugadorModal
+          isOpen={!!selectedPlayerFromAi}
+          onClose={() => setSelectedPlayerFromAi(null)}
+          jugador={selectedPlayerFromAi}
+          activeModelName={activeModelName}
+          activeModelId={activeModel.id}
+          onPlayerUpdated={(act) => {
+            setAllPlayersForAi(prev => prev.map(p => p.id === act.id ? act : p))
+            setSelectedPlayerFromAi(act)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -56,8 +56,13 @@ import {
   Loader2,
   Trash2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles,
+  Copy,
+  Check,
+  Shield
 } from 'lucide-react'
+import { generarInformeScoutingIA, type ReporteScoutingIA } from '@/lib/ai/scoutingReportGenerator'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -177,6 +182,28 @@ export function FichaJugadorModal({
   const [loading, setLoading] = useState(true)
   const [selectedAccionToPlay, setSelectedAccionToPlay] = useState<AccionConMetrica | null>(null)
   const videoPlayerRef = useRef<any>(null)
+
+  // AI Scouting Report State
+  const [showInformeIA, setShowInformeIA] = useState(false)
+  const [informeIA, setInformeIA] = useState<ReporteScoutingIA | null>(null)
+  const [copiadoIA, setCopiadoIA] = useState(false)
+
+  const handleToggleInformeIA = () => {
+    if (!jugador) return
+    if (!informeIA) {
+      const rep = generarInformeScoutingIA(jugador, activeModelName)
+      setInformeIA(rep)
+    }
+    setShowInformeIA(prev => !prev)
+  }
+
+  const handleCopiarInforme = () => {
+    if (!informeIA) return
+    const texto = `${informeIA.titulo}\n\nRADIOGRAFÍA:\n${informeIA.radiografia}\n\nENCAJE TÁCTICO (${activeModelName}):\n${informeIA.encajeTactico}\n\nPROS:\n${informeIA.prosContras.pros.map(p => `- ${p}`).join('\n')}\n\nCONTRAS:\n${informeIA.prosContras.contras.map(c => `- ${c}`).join('\n')}\n\nDICTAMEN:\n${informeIA.justificacionFinal}`
+    navigator.clipboard.writeText(texto)
+    setCopiadoIA(true)
+    setTimeout(() => setCopiadoIA(false), 2000)
+  }
 
   const [recalculando, setRecalculando] = useState(false)
   const [scoreActual, setScoreActual] = useState<number | null>(jugador?.score_global ?? null)
@@ -429,6 +456,15 @@ export function FichaJugadorModal({
           Eliminar
         </Button>
         <Button
+          variant="outline"
+          size="sm"
+          icon={<Sparkles className="w-4 h-4 text-amber-400" />}
+          onClick={handleToggleInformeIA}
+          className="border-amber-500/40 bg-slate-900 text-amber-300 hover:bg-amber-500/10 shadow-sm"
+        >
+          {showInformeIA ? 'Ocultar Informe IA' : '✨ Informe IA'}
+        </Button>
+        <Button
           variant="primary"
           size="sm"
           icon={<Printer className="w-4 h-4" />}
@@ -564,6 +600,81 @@ export function FichaJugadorModal({
             </div>
           </div>
         </div>
+
+        {/* === DOSSIER DE SCOUTING IA === */}
+        {showInformeIA && informeIA && (
+          <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 border border-amber-500/40 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-100 text-sm">{informeIA.titulo}</h4>
+                  <p className="text-[11px] text-slate-400">Generado con IA para el modelo <span className="text-emerald-400 font-semibold">{activeModelName}</span></p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={informeIA.recomendacion === 'Fichaje Prioritario' ? 'success' : informeIA.recomendacion === 'Seguimiento Cercano' ? 'info' : 'outline'}>
+                  {informeIA.recomendacion}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopiarInforme}
+                  className="text-xs h-8 bg-slate-950 border-slate-700 text-slate-300"
+                >
+                  {copiadoIA ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                  {copiadoIA ? '¡Copiado!' : 'Copiar Informe'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Radiografía y Perfil Futbolístico</h5>
+                <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">{informeIA.radiografia}</p>
+              </div>
+              <div>
+                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Idoneidad Táctica en el Modelo ({activeModelName})</h5>
+                <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">{informeIA.encajeTactico}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20">
+                  <h6 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Puntos Fuertes
+                  </h6>
+                  <ul className="space-y-1 text-slate-300">
+                    {informeIA.prosContras.pros.map(p => (
+                      <li key={p} className="flex items-start gap-1.5 text-[11px]">
+                        <span className="text-emerald-400">•</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20">
+                  <h6 className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Aspectos a Vigilar
+                  </h6>
+                  <ul className="space-y-1 text-slate-300">
+                    {informeIA.prosContras.contras.map(c => (
+                      <li key={c} className="flex items-start gap-1.5 text-[11px]">
+                        <span className="text-amber-400">•</span> {c}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-slate-200 block mb-0.5">Dictamen de Dirección Deportiva:</span>
+                  <p className="text-slate-300 leading-relaxed">{informeIA.justificacionFinal}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* === MAIN 3 COLUMNS === */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 flex-1">
