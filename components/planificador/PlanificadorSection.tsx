@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Briefcase, AlertTriangle, Search, Target, Users, ArrowRight, X } from 'lucide-react'
+import { Briefcase, AlertTriangle, Search, Target, Users, ArrowRight, X, Shield, Eye } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { FichaJugadorModal } from '@/components/directorio/FichaJugadorModal'
 import { obtenerJugadores } from '@/lib/supabase/jugadores'
 import { obtenerClubes } from '@/lib/supabase/clubes'
 import type { JugadorConClub, Club, Posicion } from '@/types/database'
@@ -24,6 +25,7 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
 
   const [miClubId, setMiClubId] = useState<string>('')
   const [relevoPlayer, setRelevoPlayer] = useState<JugadorConClub | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<JugadorConClub | null>(null)
 
   useEffect(() => {
     async function cargarDatos() {
@@ -33,7 +35,8 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
         setJugadores(jugs)
         setClubes(clbs)
         if (clbs.length > 0) {
-          setMiClubId(clbs[0].id)
+          const feGrama = clbs.find(c => c.nombre.toLowerCase().includes('grama'))
+          setMiClubId(feGrama ? feGrama.id : clbs[0].id)
         }
       } catch (err) {
         console.error('Error cargando planificador:', err)
@@ -46,11 +49,23 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
 
   const miPlantilla = jugadores.filter(j => j.club_id === miClubId)
   
-  // Agrupar por líneas
+  // Agrupar por líneas correctamente soportando posiciones base y detalladas
   const porteros = miPlantilla.filter(j => j.posicion === 'POR')
-  const defensas = miPlantilla.filter(j => ['LAT_DER', 'LAT_IZQ', 'DFC_DER', 'DFC_IZQ', 'DFC_CEN'].includes(j.posicion))
-  const medios = miPlantilla.filter(j => ['MCD', 'MC_DER', 'MC_IZQ', 'MC_CEN', 'MP'].includes(j.posicion))
-  const delanteros = miPlantilla.filter(j => ['EXT_DER', 'EXT_IZQ', 'DC'].includes(j.posicion))
+  const defensas = miPlantilla.filter(j => 
+    ['DFC', 'LAT'].includes(j.posicion) || 
+    ['LAT_DER', 'LAT_IZQ', 'DFC_DER', 'DFC_IZQ', 'DFC_CEN'].includes(j.posicion) ||
+    ['LAT_DER', 'LAT_IZQ', 'DFC_DER', 'DFC_IZQ', 'DFC_CEN'].includes(j.posicion_detallada ?? '')
+  )
+  const medios = miPlantilla.filter(j => 
+    ['MC', 'MCD', 'MP'].includes(j.posicion) || 
+    ['MCD', 'MC_DER', 'MC_IZQ', 'MC_CEN', 'MP'].includes(j.posicion) ||
+    ['MCD', 'MC_DER', 'MC_IZQ', 'MC_CEN', 'MP'].includes(j.posicion_detallada ?? '')
+  )
+  const delanteros = miPlantilla.filter(j => 
+    ['DC', 'EXT'].includes(j.posicion) || 
+    ['EXT_DER', 'EXT_IZQ', 'DC'].includes(j.posicion) ||
+    ['EXT_DER', 'EXT_IZQ', 'DC'].includes(j.posicion_detallada ?? '')
+  )
 
   const clubOptions = clubes.map(c => ({ value: c.id, label: c.nombre }))
 
@@ -66,7 +81,12 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
 
   const renderLinea = (titulo: string, lista: JugadorConClub[]) => (
     <div className="space-y-3">
-      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{titulo} ({lista.length})</h3>
+      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <span>{titulo}</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+          {lista.length}
+        </span>
+      </h3>
       {lista.length === 0 ? (
         <div className="p-4 border border-dashed border-slate-800 rounded-xl text-center text-xs text-slate-500">
           Sin jugadores en esta línea
@@ -77,15 +97,43 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
             const alertas = getAlertas(j)
             const edad = calcularEdad(j.fecha_nacimiento)
             return (
-              <div key={j.id} className="p-4 rounded-xl bg-slate-900 border border-slate-800 relative group hover:border-slate-700 transition-colors">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-bold text-slate-200">{j.nombre} {j.apellidos}</h4>
-                    <p className="text-xs text-emerald-400 font-medium">{j.posicion} - {POSICION_LABELS[j.posicion]}</p>
+              <div 
+                key={j.id} 
+                onClick={() => setSelectedPlayer(j)}
+                className="p-4 rounded-xl bg-slate-900 border border-slate-800 relative group hover:border-emerald-500/50 hover:bg-slate-900/90 transition-all cursor-pointer shadow-sm"
+              >
+                <div className="flex items-start gap-3 mb-2">
+                  {/* Avatar / Foto */}
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 overflow-hidden flex items-center justify-center font-bold text-slate-300 text-sm shrink-0 group-hover:border-emerald-500/40 transition-colors">
+                    {j.foto_url ? (
+                      <img 
+                        src={j.foto_url} 
+                        alt={j.nombre} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          if (e.currentTarget.nextElementSibling) {
+                            (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex'
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <span className={j.foto_url ? 'hidden' : 'flex'}>
+                      {j.nombre[0]}{j.apellidos[0]}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-slate-300">{edad} años</div>
-                    <div className="text-xs text-slate-500">{j.valor_mercado || 'Valor N/D'}</div>
+
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-slate-200 group-hover:text-emerald-400 transition-colors truncate">
+                      {j.nombre} {j.apellidos}
+                    </h4>
+                    <p className="text-xs text-emerald-400 font-medium truncate">
+                      {j.posicion} - {POSICION_LABELS[j.posicion]}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-bold text-slate-300">{edad ? `${edad} años` : '—'}</div>
+                    <div className="text-[11px] text-slate-500">{j.valor_mercado || 'N/D'}</div>
                   </div>
                 </div>
                 
@@ -99,18 +147,34 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
                   </div>
                 )}
                 
-                <div className="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
-                  <div className="text-[10px] text-slate-500">
-                    Contrato: <span className="text-slate-300 font-medium">{j.fin_contrato || 'N/D'}</span>
+                <div className="mt-3 pt-3 border-t border-slate-800/80 flex justify-between items-center">
+                  <div className="text-[10px] text-slate-400">
+                    Contrato: <span className="text-slate-300 font-semibold">{j.fin_contrato || 'N/D'}</span>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="h-7 text-[10px] bg-slate-950 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-                    onClick={() => setRelevoPlayer(j)}
-                  >
-                    Buscar Relevo <Target className="w-3 h-3 ml-1" />
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 text-[10px] bg-slate-950 border-slate-700 text-slate-300 hover:text-white"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedPlayer(j)
+                      }}
+                    >
+                      <Eye className="w-3 h-3 mr-1" /> Ficha
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 text-[10px] bg-slate-950 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setRelevoPlayer(j)
+                      }}
+                    >
+                      Relevo <Target className="w-3 h-3 ml-1" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             )
@@ -125,11 +189,11 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
       <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Briefcase className="w-6 h-6 text-emerald-400" />
-            Planificador de Plantilla
+            <Shield className="w-6 h-6 text-emerald-400" />
+            Plantilla del Club
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Gestión estratégica, alertas contractuales y shadow squad para {activeModelName}
+            Plantilla activa, alertas contractuales y shadow squad para {activeModelName}
           </p>
         </div>
         
@@ -159,6 +223,21 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
         <div className="text-center py-12 text-slate-500">
           Selecciona un club para ver la plantilla
         </div>
+      )}
+
+      {/* Ficha Jugador Modal */}
+      {selectedPlayer && (
+        <FichaJugadorModal
+          isOpen={!!selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+          jugador={selectedPlayer}
+          activeModelName={activeModelName}
+          activeModelId={activeModelId}
+          onPlayerUpdated={(act) => {
+            setJugadores(prev => prev.map(p => p.id === act.id ? act : p))
+            setSelectedPlayer(act)
+          }}
+        />
       )}
 
       {/* Shadow Squad Modal */}

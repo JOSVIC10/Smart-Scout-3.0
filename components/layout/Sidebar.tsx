@@ -34,15 +34,15 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     id: 'planificador',
-    label: 'Planificación',
+    label: 'Plantilla',
     icon: Briefcase,
-    description: 'Gestión de plantilla y shadow squad',
+    description: 'Plantilla del club y planificador',
   },
   {
     id: 'jugadores',
     label: 'Directorio',
     icon: Users,
-    description: 'Catálogo de jugadores y fichas completas',
+    description: 'Jugadores observados y scouting',
   },
   {
     id: 'video',

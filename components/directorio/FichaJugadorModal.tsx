@@ -39,7 +39,8 @@ import {
   BarChart,
   Bar,
   XAxis,
-  Cell
+  Cell,
+  Tooltip
 } from 'recharts'
 import {
   Video,
@@ -101,6 +102,48 @@ function IndicadorFiabilidad({ partidos }: { partidos: number }) {
       <span>Fiabilidad {config.label}</span>
     </div>
   )
+}
+
+function getPitchPosition(posicion: string, detallada?: string | null): { x: number; y: number } {
+  const code = (detallada || posicion || '').toUpperCase()
+  switch (code) {
+    case 'POR':
+      return { x: 50, y: 126 }
+    case 'DFC_IZQ':
+      return { x: 33, y: 104 }
+    case 'DFC_DER':
+      return { x: 67, y: 104 }
+    case 'DFC':
+    case 'DFC_CEN':
+      return { x: 50, y: 104 }
+    case 'LAT_IZQ':
+      return { x: 16, y: 96 }
+    case 'LAT_DER':
+      return { x: 84, y: 96 }
+    case 'LAT':
+      return { x: 84, y: 96 }
+    case 'MCD':
+      return { x: 50, y: 78 }
+    case 'MC_IZQ':
+      return { x: 32, y: 62 }
+    case 'MC_DER':
+      return { x: 68, y: 62 }
+    case 'MC':
+    case 'MC_CEN':
+      return { x: 50, y: 62 }
+    case 'MP':
+      return { x: 50, y: 46 }
+    case 'EXT_IZQ':
+      return { x: 16, y: 32 }
+    case 'EXT_DER':
+      return { x: 84, y: 32 }
+    case 'EXT':
+      return { x: 84, y: 32 }
+    case 'DC':
+      return { x: 50, y: 22 }
+    default:
+      return { x: 50, y: 70 }
+  }
 }
 
 export function FichaJugadorModal({
@@ -471,23 +514,28 @@ export function FichaJugadorModal({
             </div>
           </div>
 
-          {/* Campograma SVG */}
+          {/* Campograma SVG Dinámico */}
           <div className="w-32 h-44 shrink-0 mx-auto md:mx-0 relative mt-4 md:mt-0 flex flex-col items-center">
-            <svg viewBox="0 0 100 140" className="w-full h-full border-2 border-slate-700 bg-slate-900 rounded">
-              <rect x="0" y="0" width="100" height="140" fill="none" />
-              <line x1="0" y1="70" x2="100" y2="70" stroke="#334155" strokeWidth="1" />
-              <circle cx="50" cy="70" r="15" fill="none" stroke="#334155" strokeWidth="1" />
-              <rect x="25" y="0" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
-              <rect x="25" y="120" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
-              <rect x="40" y="0" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
-              <rect x="40" y="132" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
-              
-              {/* Posición principal (punto verde) */}
-              <circle cx="50" cy="35" r="7" fill="#10b981" />
-              <text x="50" y="38" fill="white" fontSize="6" fontWeight="bold" textAnchor="middle">{jugador.posicion}</text>
-            </svg>
-            <p className="text-[9px] text-emerald-500 font-bold uppercase mt-2">
-              {(jugador.posicion_detallada && POSICION_DETALLADA_LABELS[jugador.posicion_detallada]) || 'PRINCIPAL'}
+            {(() => {
+              const pitchPos = getPitchPosition(jugador.posicion, jugador.posicion_detallada)
+              return (
+                <svg viewBox="0 0 100 140" className="w-full h-full border-2 border-slate-700 bg-slate-900 rounded shadow-md">
+                  <rect x="0" y="0" width="100" height="140" fill="none" />
+                  <line x1="0" y1="70" x2="100" y2="70" stroke="#334155" strokeWidth="1" />
+                  <circle cx="50" cy="70" r="15" fill="none" stroke="#334155" strokeWidth="1" />
+                  <rect x="25" y="0" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
+                  <rect x="25" y="120" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
+                  <rect x="40" y="0" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
+                  <rect x="40" y="132" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
+                  
+                  {/* Posición principal dinámica (punto verde) */}
+                  <circle cx={pitchPos.x} cy={pitchPos.y} r="7" fill="#10b981" />
+                  <text x={pitchPos.x} y={pitchPos.y + 2.5} fill="white" fontSize="5.5" fontWeight="bold" textAnchor="middle">{jugador.posicion}</text>
+                </svg>
+              )
+            })()}
+            <p className="text-[9px] text-emerald-400 font-bold uppercase mt-2 text-center">
+              {(jugador.posicion_detallada && POSICION_DETALLADA_LABELS[jugador.posicion_detallada]) || POSICION_LABELS[jugador.posicion] || 'PRINCIPAL'}
             </p>
           </div>
         </div>
@@ -526,17 +574,38 @@ export function FichaJugadorModal({
             <div className="w-full flex-1 relative min-h-[220px] mt-2">
               <div className="absolute inset-0">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="60%" data={radarData}>
-                    <PolarGrid stroke="#334155" />
+                  <RadarChart cx="50%" cy="50%" outerRadius="62%" data={radarData}>
+                    <PolarGrid stroke="#334155" strokeDasharray="3 3" />
                     <PolarAngleAxis dataKey="name" stroke="#94a3b8" fontSize={9} fontWeight="bold" tickLine={false} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                    <PolarRadiusAxis 
+                      type="number"
+                      domain={[0, 100]} 
+                      angle={90} 
+                      ticks={[25, 50, 75, 100]} 
+                      tick={{ fill: '#64748b', fontSize: 8 }} 
+                      axisLine={false} 
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload
+                          return (
+                            <div className="bg-slate-900/95 border border-slate-700 px-3 py-1.5 rounded-lg shadow-xl text-xs backdrop-blur-sm">
+                              <p className="font-bold text-slate-200">{data.name}</p>
+                              <p className="text-emerald-400 font-bold text-sm">{data.percentil} <span className="text-[10px] text-slate-400 font-normal">/ 100</span></p>
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
+                    />
                     <Radar
                       name="Jugador"
                       dataKey="percentil"
                       stroke="#10b981"
                       strokeWidth={2}
                       fill="#10b981"
-                      fillOpacity={0.4}
+                      fillOpacity={0.35}
                     />
                   </RadarChart>
                 </ResponsiveContainer>

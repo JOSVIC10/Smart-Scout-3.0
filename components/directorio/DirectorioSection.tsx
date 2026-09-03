@@ -33,6 +33,7 @@ export function DirectorioSection({
   const [loading, setLoading] = useState(true)
 
   // Filters State
+  const [tipoVista, setTipoVista] = useState<'observados' | 'todos' | 'plantilla'>('observados')
   const [busqueda, setBusqueda] = useState(globalSearch)
   const [posicionFilter, setPosicionFilter] = useState<Posicion | ''>('')
   const [clubFilter, setClubFilter] = useState<string>('')
@@ -43,6 +44,8 @@ export function DirectorioSection({
   const [selectedPlayer, setSelectedPlayer] = useState<JugadorConClub | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isAddClubModalOpen, setIsAddClubModalOpen] = useState(false)
+
+  const miClub = clubes.find(c => c.nombre.toLowerCase().includes('grama')) ?? clubes[0]
 
   useEffect(() => {
     setBusqueda(globalSearch)
@@ -91,6 +94,13 @@ export function DirectorioSection({
 
   // Filter logic
   const jugadoresFiltrados = jugadores.filter((j) => {
+    const matchTipo =
+      tipoVista === 'todos'
+        ? true
+        : tipoVista === 'observados'
+          ? (!miClub || j.club_id !== miClub.id)
+          : (miClub && j.club_id === miClub.id)
+
     const matchBusqueda =
       !busqueda ||
       `${j.nombre} ${j.apellidos}`.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -101,7 +111,7 @@ export function DirectorioSection({
     const matchCategoria = !categoriaFilter || j.categoria === categoriaFilter
     const matchScore = !scoreMinFilter || (j.score_global ?? 0) >= parseInt(scoreMinFilter, 10)
 
-    return matchBusqueda && matchPosicion && matchClub && matchCategoria && matchScore
+    return matchTipo && matchBusqueda && matchPosicion && matchClub && matchCategoria && matchScore
   })
 
   const posicionOptions = Object.entries(POSICION_LABELS).map(([val, label]) => ({
@@ -118,12 +128,53 @@ export function DirectorioSection({
     <div className="space-y-6">
       {/* Header Controls & Filters Bar */}
       <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-lg font-bold text-slate-100">
-              Directorio de Jugadores <span className="text-xs text-slate-400 font-normal">({jugadoresFiltrados.length})</span>
-            </h2>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-lg font-bold text-slate-100">
+                Directorio <span className="text-xs text-slate-400 font-normal">({jugadoresFiltrados.length})</span>
+              </h2>
+            </div>
+
+            {/* Selector de tipo: Observados / Todos / Plantilla */}
+            <div className="inline-flex items-center p-1 bg-slate-950 border border-slate-800/90 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setTipoVista('observados')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  tipoVista === 'observados'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Search className="w-3.5 h-3.5" />
+                Jugadores Observados
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipoVista('plantilla')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  tipoVista === 'plantilla'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Mi Club ({miClub?.nombre ?? 'FE Grama'})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipoVista('todos')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  tipoVista === 'todos'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Todos
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
