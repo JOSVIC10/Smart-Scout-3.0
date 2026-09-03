@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { POSICION_LABELS, PIE_LABELS, clasePercentil, calcularEdad } from '@/lib/constants'
@@ -14,6 +14,7 @@ interface PlayerCardProps {
 
 export function PlayerCard({ jugador, onClick }: PlayerCardProps) {
   const edad = calcularEdad(jugador.fecha_nacimiento)
+  const [imgError, setImgError] = useState(false)
 
   return (
     <Card
@@ -28,11 +29,12 @@ export function PlayerCard({ jugador, onClick }: PlayerCardProps) {
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center text-slate-300 font-bold text-base shadow-inner shrink-0 group-hover:border-emerald-500/30 transition-colors">
-              {jugador.foto_url ? (
+              {jugador.foto_url && !imgError ? (
                 <img
                   src={jugador.foto_url}
                   alt={jugador.nombre}
                   className="w-full h-full object-cover rounded-xl"
+                  onError={() => setImgError(true)}
                 />
               ) : (
                 <span>

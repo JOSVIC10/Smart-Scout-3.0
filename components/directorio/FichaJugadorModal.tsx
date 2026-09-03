@@ -140,6 +140,7 @@ export function FichaJugadorModal({
   const [desglose, setDesglose] = useState<DetalleMetrica[]>([])
   const [fiabilidadActual, setFiabilidadActual] = useState<number>(0)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [clipsExpanded, setClipsExpanded] = useState(false)
@@ -149,6 +150,7 @@ export function FichaJugadorModal({
   useEffect(() => {
     if (!jugador || !isOpen) return
     setScoreActual(jugador.score_global)
+    setImgError(false)
 
     async function loadData() {
       setLoading(true)
@@ -402,8 +404,14 @@ export function FichaJugadorModal({
           <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-slate-900 rounded border border-slate-700 overflow-hidden flex items-center justify-center text-4xl font-black text-slate-700 mx-auto md:mx-0 shadow-lg">
             {isUploadingPhoto ? (
               <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
-            ) : jugador.foto_url ? (
-              <img src={jugador.foto_url} alt={jugador.nombre} className="w-full h-full object-cover print:color-adjust-exact" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+            ) : jugador.foto_url && !imgError ? (
+              <img 
+                src={jugador.foto_url} 
+                alt={jugador.nombre} 
+                className="w-full h-full object-cover print:color-adjust-exact" 
+                style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                onError={() => setImgError(true)}
+              />
             ) : (
               <span>{jugador.nombre.charAt(0)}{jugador.apellidos.charAt(0)}</span>
             )}
