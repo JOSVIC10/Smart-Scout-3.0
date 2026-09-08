@@ -17,6 +17,7 @@ import { EnDirectoSection } from '@/components/endirecto/EnDirectoSection'
 import { AiScoutModal } from '@/components/ai/AiScoutModal'
 import { FichaJugadorModal } from '@/components/directorio/FichaJugadorModal'
 import { QuickStartGuideModal } from '@/components/help/QuickStartGuideModal'
+import { RecalcularJornadaModal } from '@/components/jornadas/RecalcularJornadaModal'
 import { obtenerModelos } from '@/lib/supabase/modelos'
 import { obtenerJugadoresConScoreModelo } from '@/lib/supabase/jugadores'
 import type { ModeloJuego, JugadorConClub } from '@/types/database'
@@ -39,6 +40,9 @@ export default function Home() {
 
   // Quick Start Guide Modal State
   const [isGuideOpen, setIsGuideOpen] = useState(false)
+
+  // Cierre y Recálculo de Jornada Modal State
+  const [isRecalcularJornadaOpen, setIsRecalcularJornadaOpen] = useState(false)
 
   // All available models (loaded from Supabase)
   const [allModels, setAllModels] = useState<ModeloJuego[]>([])
@@ -157,6 +161,7 @@ export default function Home() {
               onSelectPlayer={handleOpenPlayerFicha}
               onViewSamplePlayer={handleViewSamplePlayer}
               onOpenGuide={() => setIsGuideOpen(true)}
+              onOpenRecalcularJornada={() => setIsRecalcularJornadaOpen(true)}
               activeModelName={activeModelName}
               activeModelId={activeModel.id}
             />
@@ -211,6 +216,7 @@ export default function Home() {
               activeModelId={activeModel.id}
               activeModelName={activeModelName}
               onScoreUpdated={handleScoreUpdated}
+              onOpenRecalcularJornada={() => setIsRecalcularJornadaOpen(true)}
             />
           )}
         </main>
@@ -221,6 +227,19 @@ export default function Home() {
         isOpen={isGuideOpen}
         onClose={() => setIsGuideOpen(false)}
         onNavigateSection={(sec) => setActiveSection(sec)}
+      />
+
+      {/* Modal de Cierre y Recálculo de Jornada */}
+      <RecalcularJornadaModal
+        isOpen={isRecalcularJornadaOpen}
+        onClose={() => setIsRecalcularJornadaOpen(false)}
+        activeModelId={activeModel.id}
+        activeModelName={activeModelName}
+        onRecalculoCompletado={() => {
+          obtenerJugadoresConScoreModelo(undefined, activeModel.id)
+            .then(setAllPlayersForAi)
+            .catch((err) => console.warn('Error refreshing players:', err))
+        }}
       />
 
       {/* Modal Asistente de IA */}

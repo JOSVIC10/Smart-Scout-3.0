@@ -13,6 +13,7 @@ import {
   GitCompare,
   BookOpen,
   UserCheck,
+  RotateCcw,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -38,6 +39,7 @@ interface DashboardSectionProps {
   onSelectPlayer: (jugador: JugadorConClub) => void
   onViewSamplePlayer?: () => void
   onOpenGuide?: () => void
+  onOpenRecalcularJornada?: () => void
   activeModelName: string
   activeModelId?: string
 }
@@ -47,6 +49,7 @@ export function DashboardSection({
   onSelectPlayer,
   onViewSamplePlayer,
   onOpenGuide,
+  onOpenRecalcularJornada,
   activeModelName,
   activeModelId,
 }: DashboardSectionProps) {
@@ -148,6 +151,19 @@ export function DashboardSection({
             >
               Probar Comparador
             </Button>
+
+            {onOpenRecalcularJornada && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={<RotateCcw className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                onClick={onOpenRecalcularJornada}
+                className="font-bold border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300"
+                title="Cerrar la jornada y recalcular estadísticas de jugadores propios y observados"
+              >
+                Cerrar Jornada & Recalcular
+              </Button>
+            )}
 
             {onOpenGuide && (
               <Button

@@ -17,9 +17,10 @@ interface EnDirectoSectionProps {
   activeModelId?: string
   activeModelName?: string
   onScoreUpdated?: (jugadorId: string, score: number) => void
+  onOpenRecalcularJornada?: () => void
 }
 
-export function EnDirectoSection({ activeModelId, activeModelName, onScoreUpdated }: EnDirectoSectionProps) {
+export function EnDirectoSection({ activeModelId, activeModelName, onScoreUpdated, onOpenRecalcularJornada }: EnDirectoSectionProps) {
   const [partidos, setPartidos] = useState<Partido[]>([])
   const [selectedPartido, setSelectedPartido] = useState<Partido | null>(null)
   const [isMatchActive, setIsMatchActive] = useState(false)
@@ -279,12 +280,23 @@ ${Object.entries(playerStats)
             <Clock className="w-6 h-6 text-emerald-500" />
             Configuración En Directo
           </h2>
-          <button
-            onClick={() => setCrearPartidoModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs hover:bg-emerald-600/30 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Crear Nuevo Partido
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenRecalcularJornada && (
+              <button
+                onClick={onOpenRecalcularJornada}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs hover:bg-blue-600/30 transition-colors"
+                title="Cerrar la jornada y actualizar las estadísticas de jugadores"
+              >
+                <RotateCcw className="w-4 h-4" /> Cerrar Jornada
+              </button>
+            )}
+            <button
+              onClick={() => setCrearPartidoModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs hover:bg-emerald-600/30 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Crear Nuevo Partido
+            </button>
+          </div>
         </div>
         
         <div className="mb-6">
