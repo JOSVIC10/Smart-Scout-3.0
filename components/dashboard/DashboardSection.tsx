@@ -42,6 +42,7 @@ interface DashboardSectionProps {
   onOpenRecalcularJornada?: () => void
   activeModelName: string
   activeModelId?: string
+  refreshKey?: number
 }
 
 export function DashboardSection({
@@ -52,6 +53,7 @@ export function DashboardSection({
   onOpenRecalcularJornada,
   activeModelName,
   activeModelId,
+  refreshKey,
 }: DashboardSectionProps) {
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
   const [totalPartidos, setTotalPartidos] = useState<number>(0)
@@ -74,7 +76,7 @@ export function DashboardSection({
       }
     }
     loadData()
-  }, [activeModelId])
+  }, [activeModelId, refreshKey])
 
   // KPI Calculations
   const totalJugadores = jugadores.length

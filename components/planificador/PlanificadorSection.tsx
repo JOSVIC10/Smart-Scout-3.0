@@ -20,11 +20,12 @@ import { POSICION_LABELS, calcularEdad } from '@/lib/constants'
 interface PlanificadorSectionProps {
   activeModelName: string
   activeModelId?: string
+  refreshKey?: number
 }
 
 type EstadoNegociacion = 'Ojeado' | 'En Contacto' | 'Oferta Enviada' | 'Descartado'
 
-export function PlanificadorSection({ activeModelName, activeModelId }: PlanificadorSectionProps) {
+export function PlanificadorSection({ activeModelName, activeModelId, refreshKey }: PlanificadorSectionProps) {
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
   const [clubes, setClubes] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,7 +56,7 @@ export function PlanificadorSection({ activeModelName, activeModelId }: Planific
       }
     }
     cargarDatos()
-  }, [activeModelId])
+  }, [activeModelId, refreshKey])
 
   const miPlantilla = jugadores.filter(j => j.club_id === miClubId)
   

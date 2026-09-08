@@ -52,6 +52,7 @@ export default function Home() {
 
   // Scores actualizados recientemente por auto-recálculo (jugadorId → score)
   const [recentScoreUpdates, setRecentScoreUpdates] = useState<Map<string, number>>(new Map())
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleScoreUpdated = (jugadorId: string, nuevoScore: number) => {
     setRecentScoreUpdates(prev => new Map(prev).set(jugadorId, nuevoScore))
@@ -164,6 +165,7 @@ export default function Home() {
               onOpenRecalcularJornada={() => setIsRecalcularJornadaOpen(true)}
               activeModelName={activeModelName}
               activeModelId={activeModel.id}
+              refreshKey={refreshKey}
             />
           )}
 
@@ -171,6 +173,7 @@ export default function Home() {
             <PlanificadorSection
               activeModelName={activeModelName}
               activeModelId={activeModel.id}
+              refreshKey={refreshKey}
             />
           )}
 
@@ -180,6 +183,7 @@ export default function Home() {
               activeModelId={activeModel.id}
               globalSearch={globalSearch}
               scoreOverrides={recentScoreUpdates}
+              refreshKey={refreshKey}
             />
           )}
 
@@ -236,6 +240,7 @@ export default function Home() {
         activeModelId={activeModel.id}
         activeModelName={activeModelName}
         onRecalculoCompletado={() => {
+          setRefreshKey(k => k + 1)
           obtenerJugadoresConScoreModelo(undefined, activeModel.id)
             .then(setAllPlayersForAi)
             .catch((err) => console.warn('Error refreshing players:', err))

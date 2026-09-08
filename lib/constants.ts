@@ -347,3 +347,70 @@ export function formatearFecha(fecha: string | null): string {
 export function nombreCompleto(nombre: string, apellidos: string): string {
   return `${nombre} ${apellidos}`
 }
+
+// ---------------------------------------------------------------------------
+// Temporadas deportivas (formato futbolístico)
+// ---------------------------------------------------------------------------
+
+/** Lista de temporadas soportadas (más reciente primero) */
+export const TEMPORADAS = ['2026-2027', '2025-2026', '2024-2025'] as const
+export type Temporada = (typeof TEMPORADAS)[number]
+
+/**
+ * Devuelve la temporada deportiva actual en formato "YYYY-YYYY+1".
+ * La temporada va de julio (año N) a junio (año N+1).
+ * Ej.: en septiembre 2026 → "2026-2027", en mayo 2027 → "2026-2027"
+ */
+export function obtenerTemporadaActual(fecha?: Date | string): Temporada {
+  const d = fecha ? new Date(fecha) : new Date()
+  const year = d.getFullYear()
+  const month = d.getMonth() // 0-indexed
+  // Si estamos entre julio(6) y diciembre(11), la temporada empieza este año
+  // Si estamos entre enero(0) y junio(5), la temporada empezó el año pasado
+  const startYear = month >= 6 ? year : year - 1
+  return `${startYear}-${startYear + 1}` as Temporada
+}
+
+/**
+ * Convierte una temporada deportiva al parámetro de año que usa BeSoccer en URLs.
+ * Ej.: "2026-2027" → 2027, "2025-2026" → 2026
+ */
+export function temporadaAAnoBeSoccer(temporada: string): number {
+  const parts = temporada.split('-')
+  return parseInt(parts[1] || parts[0], 10)
+}
+
+// ---------------------------------------------------------------------------
+// Competiciones y Grupos BeSoccer
+// ---------------------------------------------------------------------------
+
+export interface CompeticionConfig {
+  slug: string
+  nombre: string
+  grupos: { slug: string; nombre: string }[]
+}
+
+export const COMPETICIONES_BESOCCER: CompeticionConfig[] = [
+  {
+    slug: 'tercera_division_rfef',
+    nombre: '3ª Federación (Tercera RFEF)',
+    grupos: [
+      { slug: 'grupo1', nombre: 'Grupo 1' },
+      { slug: 'grupo2', nombre: 'Grupo 2' },
+      { slug: 'grupo3', nombre: 'Grupo 3' },
+      { slug: 'grupo4', nombre: 'Grupo 4' },
+      { slug: 'grupo5', nombre: 'Grupo 5 (Cataluña)' },
+    ],
+  },
+  {
+    slug: 'segunda_division_rfef',
+    nombre: '2ª Federación (Segunda RFEF)',
+    grupos: [
+      { slug: 'grupo1', nombre: 'Grupo 1' },
+      { slug: 'grupo2', nombre: 'Grupo 2' },
+      { slug: 'grupo3', nombre: 'Grupo 3' },
+      { slug: 'grupo4', nombre: 'Grupo 4' },
+      { slug: 'grupo5', nombre: 'Grupo 5' },
+    ],
+  },
+]

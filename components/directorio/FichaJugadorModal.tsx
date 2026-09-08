@@ -15,12 +15,14 @@ import {
   formatearFecha,
   RECOMENDACION_COLORS,
   RECOMENDACION_LABELS,
-  ZONA_LABELS
+  ZONA_LABELS,
+  obtenerTemporadaActual
 } from '@/lib/constants'
 import { obtenerMetricasJugador } from '@/lib/supabase/metricas'
 import { obtenerValoracionesPorJugador, crearValoracion } from '@/lib/supabase/valoraciones'
 import { obtenerAccionesPorJugador, obtenerEstadisticasPorJugador, type EstadisticaMetricaN2 } from '@/lib/supabase/acciones'
 import { actualizarJugador } from '@/lib/supabase/jugadores'
+import { supabase } from '@/lib/supabase/client'
 import { calcularScore, fiabilidad, type DetalleMetrica } from '@/lib/scoring/calcularScore'
 import type {
   JugadorConClub,
@@ -64,7 +66,6 @@ import {
 } from 'lucide-react'
 import { generarInformeScoutingIA, type ReporteScoutingIA } from '@/lib/ai/scoutingReportGenerator'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Edit2 } from 'lucide-react'
 import { EditarAtributosForm } from './EditarAtributosModal'
@@ -217,6 +218,12 @@ export function FichaJugadorModal({
 
   const initialSeekDone = useRef(false)
 
+  const [jugadorActual, setJugadorActual] = useState<JugadorConClub | null>(jugador)
+
+  useEffect(() => {
+    setJugadorActual(jugador)
+  }, [jugador])
+
   useEffect(() => {
     if (!jugador || !isOpen) return
     setScoreActual(jugador.score_global)
@@ -226,13 +233,19 @@ export function FichaJugadorModal({
       setLoading(true)
       try {
         const { obtenerModelos } = await import('@/lib/supabase/modelos')
-        const [mets, vals, accs, stats, mods] = await Promise.all([
+        const [mets, vals, accs, stats, mods, freshPlayerRes] = await Promise.all([
           obtenerMetricasJugador(jugador!.id),
           obtenerValoracionesPorJugador(jugador!.id),
           obtenerAccionesPorJugador(jugador!.id),
           obtenerEstadisticasPorJugador(jugador!.id),
-          obtenerModelos()
+          obtenerModelos(),
+          supabase.from('jugadores').select('*, club:clubes(*)').eq('id', jugador!.id).single()
         ])
+        if (freshPlayerRes.data) {
+          const freshData = freshPlayerRes.data as JugadorConClub
+          setJugadorActual(freshData)
+          onPlayerUpdated?.(freshData)
+        }
         setMetricas(mets)
         setValoraciones(vals)
         setAcciones(accs)
@@ -318,14 +331,21 @@ export function FichaJugadorModal({
     }
   }
 
+  const j = jugadorActual ?? jugador
+
   const { radarData, goles, asistencias, tarjetasAmarillas, tarjetasRojas, pctEfectividad, historial } = useMemo(() => {
-    if (!jugador) return { radarData: [], goles: 0, asistencias: 0, tarjetasAmarillas: 0, tarjetasRojas: 0, pctEfectividad: 0, historial: [] }
+    if (!j) return { radarData: [], goles: 0, asistencias: 0, tarjetasAmarillas: 0, tarjetasRojas: 0, pctEfectividad: 0, historial: [] }
 
     // Calcula goles y asistencias
-    const goles = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('gol') || a.metrica_n2?.nombre.toLowerCase().includes('gol')).length
-    const asistencias = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('asistencia') || a.metrica_n1?.nombre.toLowerCase().includes('asi')).length
-    const tarjetasAmarillas = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('amarilla')).length
-    const tarjetasRojas = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('roja')).length
+    const golesAcc = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('gol') || a.metrica_n2?.nombre.toLowerCase().includes('gol')).length
+    const asistenciasAcc = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('asistencia') || a.metrica_n1?.nombre.toLowerCase().includes('asi')).length
+    const tarjetasAmarillasAcc = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('amarilla')).length
+    const tarjetasRojasAcc = acciones.filter(a => a.metrica_n1?.nombre.toLowerCase().includes('roja')).length
+
+    const goles = (j.est_goles !== undefined && j.est_goles !== null) ? j.est_goles : golesAcc
+    const asistencias = (j.est_asistencias !== undefined && j.est_asistencias !== null) ? j.est_asistencias : asistenciasAcc
+    const tarjetasAmarillas = (j.est_amarillas !== undefined && j.est_amarillas !== null) ? j.est_amarillas : tarjetasAmarillasAcc
+    const tarjetasRojas = (j.est_rojas !== undefined && j.est_rojas !== null) ? j.est_rojas : tarjetasRojasAcc
 
     const efectivas = acciones.filter(a => a.resultado === 'efectiva').length
     const pctEfectividad = acciones.length > 0 ? Math.round((efectivas / acciones.length) * 100) : 0
@@ -373,31 +393,31 @@ export function FichaJugadorModal({
       }))
     }
 
-    const year = new Date().getFullYear()
-    const historial = jugador.partidos_analizados > 0 ? [{
-      temporada: `${year}`,
-      equipo: jugador.club?.nombre ?? 'Sin equipo',
-      partidos: jugador.partidos_analizados,
+    const partidosTotales = j.est_partidos ?? j.partidos_analizados ?? 0
+    const historial = partidosTotales > 0 ? [{
+      temporada: obtenerTemporadaActual(),
+      equipo: j.club?.nombre ?? 'Sin equipo',
+      partidos: partidosTotales,
       goles,
       asistencias,
-      score: scoreActual ?? 0
+      score: scoreActual ?? j.score_global ?? 0
     }] : []
 
     return { radarData, goles, asistencias, tarjetasAmarillas, tarjetasRojas, pctEfectividad, historial }
-  }, [metricas, acciones, jugador, scoreActual, desglose])
+  }, [metricas, acciones, j, scoreActual, desglose])
 
   const puntosFuertes = useMemo(() => Array.from(new Set(valoraciones.flatMap(v => v.aspectos_positivos || []))), [valoraciones])
   const puntosDebiles = useMemo(() => Array.from(new Set(valoraciones.flatMap(v => v.aspectos_mejora || []))), [valoraciones])
   const caracter = valoraciones.find(v => v.notas && v.notas.length > 0)?.notas?.slice(0, 100) || "Trabajador"
 
-  if (!jugador) return null
-  const edad = calcularEdad(jugador.fecha_nacimiento)
+  if (!j) return null
+  const edad = calcularEdad(j.fecha_nacimiento)
 
   if (showEditModal) {
     return (
       <Modal isOpen={isOpen} onClose={() => setShowEditModal(false)} title="Modo Edición" size="4xl">
         <EditarAtributosForm
-          jugador={jugador}
+          jugador={jugador!}
           valoracionActual={valoraciones[0]}
           metricas={metricas}
           onCancel={() => setShowEditModal(false)}
@@ -483,16 +503,16 @@ export function FichaJugadorModal({
           <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden flex items-center justify-center text-4xl font-black text-slate-400 dark:text-slate-700 mx-auto md:mx-0 shadow-sm">
             {isUploadingPhoto ? (
               <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
-            ) : jugador.foto_url && !imgError ? (
+            ) : j.foto_url && !imgError ? (
               <img 
-                src={jugador.foto_url} 
-                alt={jugador.nombre} 
+                src={j.foto_url} 
+                alt={j.nombre} 
                 className="w-full h-full object-cover print:color-adjust-exact" 
                 style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
                 onError={() => setImgError(true)}
               />
             ) : (
-              <span>{jugador.nombre.charAt(0)}{jugador.apellidos.charAt(0)}</span>
+              <span>{j.nombre.charAt(0)}{j.apellidos.charAt(0)}</span>
             )}
             {!isUploadingPhoto && (
               <div 
@@ -508,44 +528,44 @@ export function FichaJugadorModal({
           {/* Info Principal */}
           <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white print:text-black leading-none mb-2 text-center md:text-left">
-              {jugador.nombre} {jugador.apellidos}
+              {j.nombre} {j.apellidos}
             </h1>
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
-              {jugador.club?.escudo_url ? (
-                <img src={jugador.club.escudo_url} alt="Escudo" className="w-8 h-8 object-contain" />
+              {j.club?.escudo_url ? (
+                <img src={j.club.escudo_url} alt="Escudo" className="w-8 h-8 object-contain" />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px] font-bold">CLUB</div>
               )}
               <div>
-                <p className="text-sm md:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">{jugador.club?.nombre ?? 'Agente Libre'}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight font-medium">{jugador.categoria ?? 'Sin categoría'}</p>
+                <p className="text-sm md:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">{j.club?.nombre ?? 'Agente Libre'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight font-medium">{j.categoria ?? 'Sin categoría'}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 border-t border-slate-200 dark:border-slate-800 pt-4 text-center md:text-left mt-2 md:mt-4">
               <div className="flex-1 min-w-[100px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Nacimiento</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.fecha_nacimiento ? formatearFecha(jugador.fecha_nacimiento) : 'N/D'} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">({edad} AÑOS)</span></p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{j.fecha_nacimiento ? formatearFecha(j.fecha_nacimiento) : 'N/D'} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">({edad} AÑOS)</span></p>
               </div>
               <div className="flex-1 min-w-[80px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Nacionalidad</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.nacionalidad}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{j.nacionalidad}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Altura</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.altura_cm ? `${jugador.altura_cm} cm` : 'N/D'}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{j.altura_cm ? `${j.altura_cm} cm` : 'N/D'}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Pie</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{PIE_LABELS[jugador.pie_preferido]}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{PIE_LABELS[j.pie_preferido]}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Posición</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.posicion}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{j.posicion}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dorsal</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.dorsal ?? '-'}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{j.dorsal ?? '-'}</p>
               </div>
             </div>
           </div>
@@ -553,7 +573,7 @@ export function FichaJugadorModal({
           {/* Campograma SVG Dinámico */}
           <div className="w-32 h-44 shrink-0 mx-auto md:mx-0 relative mt-4 md:mt-0 flex flex-col items-center">
             {(() => {
-              const pitchPos = getPitchPosition(jugador.posicion, jugador.posicion_detallada)
+              const pitchPos = getPitchPosition(j.posicion, j.posicion_detallada)
               return (
                 <svg viewBox="0 0 100 140" className="w-full h-full border-2 border-slate-300 dark:border-slate-700 bg-emerald-900/10 dark:bg-slate-900 rounded-xl shadow-xs">
                   <rect x="0" y="0" width="100" height="140" fill="none" />
@@ -566,12 +586,12 @@ export function FichaJugadorModal({
                   
                   {/* Posición principal dinámica (punto verde) */}
                   <circle cx={pitchPos.x} cy={pitchPos.y} r="7" fill="#059669" />
-                  <text x={pitchPos.x} y={pitchPos.y + 2.5} fill="white" fontSize="5.5" fontWeight="bold" textAnchor="middle">{jugador.posicion}</text>
+                  <text x={pitchPos.x} y={pitchPos.y + 2.5} fill="white" fontSize="5.5" fontWeight="bold" textAnchor="middle">{j.posicion}</text>
                 </svg>
               )
             })()}
             <p className="text-[9px] text-emerald-700 dark:text-emerald-400 font-bold uppercase mt-2 text-center">
-              {(jugador.posicion_detallada && POSICION_DETALLADA_LABELS[jugador.posicion_detallada]) || POSICION_LABELS[jugador.posicion] || 'PRINCIPAL'}
+              {(j.posicion_detallada && POSICION_DETALLADA_LABELS[j.posicion_detallada]) || POSICION_LABELS[j.posicion] || 'PRINCIPAL'}
             </p>
           </div>
         </div>
@@ -580,15 +600,15 @@ export function FichaJugadorModal({
         <div className="flex flex-wrap md:flex-nowrap items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 gap-6 mb-6 shadow-xs">
           <div className="flex-1 min-w-[120px]">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Valor de Mercado</p>
-            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">{jugador.valor_mercado || 'N/D'}</p>
+            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">{j.valor_mercado || 'N/D'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Fin de Contrato</p>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{jugador.fin_contrato || 'N/D'}</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{j.fin_contrato || 'N/D'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Estilo de Juego</p>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={jugador.estilo_juego || 'Sin definir'}>{jugador.estilo_juego || 'Sin definir'}</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={j.estilo_juego || 'Sin definir'}>{j.estilo_juego || 'Sin definir'}</p>
           </div>
           <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6 flex items-center justify-between">
             <div>
@@ -727,27 +747,27 @@ export function FichaJugadorModal({
           {/* COL 2: Season Stats */}
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs print:border-slate-300 flex flex-col justify-between">
             <div>
-              <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Temporada 2026</h3>
+              <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Temporada {obtenerTemporadaActual()}</h3>
               <div className="grid grid-cols-5 gap-2 text-center mb-6">
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">PJ</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_partidos ?? jugador.partidos_analizados}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_partidos ?? j.partidos_analizados ?? 0}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Min</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_minutos ?? jugador.minutos_jugados}'</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_minutos ?? j.minutos_jugados ?? 0}'</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Goles</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_goles ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_goles ?? 0}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Asist</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_asistencias ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_asistencias ?? 0}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Tarjetas</p>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">{jugador.est_amarillas ?? 0} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{jugador.est_rojas ?? 0}</span></p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-600">{j.est_amarillas ?? 0} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{j.est_rojas ?? 0}</span></p>
                 </div>
               </div>
             </div>
@@ -1052,7 +1072,7 @@ export function FichaJugadorModal({
         onClose={() => setShowConfirmDelete(false)}
         onConfirm={handleConfirmDeletePlayer}
         title="Eliminar Jugador"
-        message={`¿Estás seguro de que deseas eliminar a ${jugador.nombre} ${jugador.apellidos}? Esta acción no se puede deshacer y eliminará también sus acciones etiquetadas.`}
+        message={`¿Estás seguro de que deseas eliminar a ${j.nombre} ${j.apellidos}? Esta acción no se puede deshacer y eliminará también sus acciones etiquetadas.`}
         confirmText="Eliminar Jugador"
         loading={deletingPlayer}
       />

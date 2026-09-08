@@ -104,12 +104,11 @@ export async function ejecutarRecalculoJornada({
     const amarillasAcc = accsJugador.filter((a) => a.nota?.toLowerCase().includes('amarilla')).length
     const rojasAcc = accsJugador.filter((a) => a.nota?.toLowerCase().includes('roja')).length
 
-    // Minutos disputados en la jornada (si jugó o promedio realista de participación)
-    // Los primeros 11-14 jugadores de la plantilla suelen disputar entre 60 y 90 min
+    // Minutos disputados en la jornada: toda la plantilla en dinámica de competición participa
+    // (titulares 80-90 min, rotación y suplentes 25-60 min)
     const esTitular = i < 11
-    const esSuplenteConMinutos = i >= 11 && i < 16
-    const minJornada = esTitular ? 90 : esSuplenteConMinutos ? 25 : 0
-    const jugoPartido = minJornada > 0
+    const minJornada = esTitular ? 90 : (30 + ((i * 7) % 35))
+    const jugoPartido = true
 
     // Goles / Asistencias de jornada (acciones reales o simulación proporcional según rol)
     let golesJornada = golesAcc

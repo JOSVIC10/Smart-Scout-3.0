@@ -21,6 +21,7 @@ interface DirectorioSectionProps {
   globalSearch?: string
   /** Scores actualizados por auto-recálculo (desde VideoSection via page.tsx) */
   scoreOverrides?: Map<string, number>
+  refreshKey?: number
 }
 
 export function DirectorioSection({
@@ -28,6 +29,7 @@ export function DirectorioSection({
   activeModelId,
   globalSearch = '',
   scoreOverrides,
+  refreshKey,
 }: DirectorioSectionProps) {
   const [jugadores, setJugadores] = useState<JugadorConClub[]>([])
   const [clubes, setClubes] = useState<Club[]>([])
@@ -76,7 +78,7 @@ export function DirectorioSection({
 
   useEffect(() => {
     cargarDatos()
-  }, [activeModelId])
+  }, [activeModelId, refreshKey])
 
   useEffect(() => {
     if (scoreOverrides && scoreOverrides.size > 0) {
