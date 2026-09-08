@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { Link2, Sparkles, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { Link2, Sparkles, Check, AlertCircle, Loader2, BarChart2 } from 'lucide-react'
 import { crearJugador } from '@/lib/supabase/jugadores'
 import { obtenerClubes, crearClub } from '@/lib/supabase/clubes'
 import { supabase } from '@/lib/supabase/client'
@@ -33,21 +33,12 @@ interface ParsedPlayer {
   fin_contrato: string
   score_global: number
   foto_url: string | null
-}
-
-const M = {
-  CONSTRUCCION: 'c2000001-0000-0000-0000-000000000001',
-  ASOCIATIVO:   'c2000001-0000-0000-0000-000000000002',
-  PROGRESION:   'c2000001-0000-0000-0000-000000000003',
-  CREACION:     'c2000001-0000-0000-0000-000000000004',
-  ESTRATEGIA:   'c2000001-0000-0000-0000-000000000005',
-  FINALIZACION: 'c2000001-0000-0000-0000-000000000006',
-  AMENAZA:      'c2000001-0000-0000-0000-000000000007',
-  DEF_RIVAL:    'c2000001-0000-0000-0000-000000000008',
-  DEF_ABIERTO:  'c2000001-0000-0000-0000-000000000009',
-  DEF_PROPIO:   'c2000001-0000-0000-0000-000000000010',
-  CONSERVACION: 'c2000001-0000-0000-0000-000000000011',
-  PORTERO:      'c2000001-0000-0000-0000-000000000012'
+  est_partidos: number
+  est_minutos: number
+  est_goles: number
+  est_asistencias: number
+  est_amarillas: number
+  est_rojas: number
 }
 
 export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPlayerModalProps) {
@@ -105,7 +96,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
         })
       }
 
-      // 2. Crear Jugador
+      // 2. Crear Jugador con sus estadísticas básicas
       const nuevo = await crearJugador({
         nombre: parsed.nombre.trim(),
         apellidos: parsed.apellidos.trim(),
@@ -121,73 +112,42 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
         categoria: parsed.categoria,
         valor_mercado: parsed.valor_mercado || null,
         fin_contrato: parsed.fin_contrato || null,
-        minutos_jugados: 1200,
-        partidos_analizados: 14,
+        minutos_jugados: parsed.est_minutos || 1200,
+        partidos_analizados: parsed.est_partidos || 14,
         score_global: parsed.score_global || 75,
-        foto_url: parsed.foto_url
+        foto_url: parsed.foto_url,
+        est_partidos: parsed.est_partidos,
+        est_minutos: parsed.est_minutos,
+        est_goles: parsed.est_goles,
+        est_asistencias: parsed.est_asistencias,
+        est_amarillas: parsed.est_amarillas,
+        est_rojas: parsed.est_rojas
       })
 
-      // 3. Crear Métricas N2 Calibradas para su radar
-      const base = parsed.score_global || 75
-      const mRows: { metrica_n2_id: string; percentil: number }[] = []
-
-      if (parsed.posicion === 'POR') {
-        mRows.push(
-          { metrica_n2_id: M.PORTERO, percentil: Math.min(96, Math.round(base + 5)) },
-          { metrica_n2_id: M.DEF_PROPIO, percentil: Math.min(94, Math.round(base - 1)) },
-          { metrica_n2_id: M.CONSTRUCCION, percentil: Math.max(35, Math.round(base - 15)) },
-          { metrica_n2_id: M.CONSERVACION, percentil: Math.max(30, Math.round(base - 22)) }
-        )
-      } else if (parsed.posicion === 'DFC' || parsed.posicion === 'LAT') {
-        const isLat = parsed.posicion === 'LAT'
-        mRows.push(
-          { metrica_n2_id: M.DEF_ABIERTO, percentil: Math.min(96, Math.round(base + (isLat ? 2 : 6))) },
-          { metrica_n2_id: M.DEF_PROPIO, percentil: Math.min(96, Math.round(base + (isLat ? 0 : 5))) },
-          { metrica_n2_id: M.CONSTRUCCION, percentil: Math.round(base - 3) },
-          { metrica_n2_id: M.PROGRESION, percentil: Math.round(base + (isLat ? 6 : -10)) },
-          { metrica_n2_id: M.FINALIZACION, percentil: Math.max(25, Math.round(base - 32)) }
-        )
-      } else if (parsed.posicion === 'MC' || parsed.posicion === 'MCD') {
-        const isMcd = parsed.posicion === 'MCD'
-        mRows.push(
-          { metrica_n2_id: M.CONSTRUCCION, percentil: Math.min(96, Math.round(base + 4)) },
-          { metrica_n2_id: M.ASOCIATIVO, percentil: Math.min(95, Math.round(base + 3)) },
-          { metrica_n2_id: M.CONSERVACION, percentil: Math.round(base + (isMcd ? 6 : 1)) },
-          { metrica_n2_id: M.PROGRESION, percentil: Math.round(base - (isMcd ? 5 : 1)) },
-          { metrica_n2_id: M.CREACION, percentil: Math.round(base + (isMcd ? -10 : 4)) }
-        )
-      } else {
-        const isExt = parsed.posicion === 'EXT'
-        mRows.push(
-          { metrica_n2_id: M.AMENAZA, percentil: Math.min(96, Math.round(base + (isExt ? 6 : 3))) },
-          { metrica_n2_id: M.FINALIZACION, percentil: Math.min(96, Math.round(base + (isExt ? 0 : 8))) },
-          { metrica_n2_id: M.CREACION, percentil: Math.round(base + (isExt ? 4 : -5)) },
-          { metrica_n2_id: M.PROGRESION, percentil: Math.round(base + (isExt ? 3 : -3)) },
-          { metrica_n2_id: M.DEF_RIVAL, percentil: Math.max(30, Math.round(base - 26)) }
-        )
+      // 3. Valoración Scouting Inicial
+      try {
+        await supabase.from('valoraciones').insert({
+          jugador_id: nuevo.id,
+          score: parsed.score_global || 75,
+          aspectos_positivos: ['Importado vía scouting digital', 'Perfil a seguir'],
+          aspectos_mejora: ['Adaptación táctica'],
+          notas: `[IMPORTACIÓN WEB]: Jugador extraído desde ${url}. Observado como objetivo potencial de mercado.`,
+          recomendacion: 'SEGUIR'
+        })
+      } catch (valErr) {
+        console.warn('Nota de valoración opcional no insertada:', valErr)
       }
 
-      await supabase.from('jugador_metricas_n2').insert(mRows.map(r => ({
-        jugador_id: nuevo.id,
-        metrica_n2_id: r.metrica_n2_id,
-        percentil: r.percentil,
-        valor: r.percentil / 100,
-        muestra: 10
-      })))
+      // Asociar club al jugador para renderizado inmediato
+      const nuevoConClub = {
+        ...nuevo,
+        club: club
+      }
 
-      // 4. Valoración Scouting Inicial
-      await supabase.from('valoraciones').insert({
-        jugador_id: nuevo.id,
-        score: parsed.score_global || 75,
-        aspectos_positivos: ['Importado vía scouting digital', 'Perfil a seguir'],
-        aspectos_mejora: ['Adaptación táctica'],
-        notas: `[IMPORTACIÓN WEB]: Jugador extraído desde ${url}. Observado como objetivo potencial de mercado.`,
-        recomendacion: 'SEGUIR'
-      })
-
-      onPlayerCreated(nuevo)
+      onPlayerCreated(nuevoConClub)
       handleClose()
     } catch (err: any) {
+      console.error('Error al guardar jugador importado:', err)
       setError(err.message || 'Error al guardar el jugador en la base de datos')
     } finally {
       setSaving(false)
@@ -248,7 +208,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
 
         {/* Live Parsed Preview & Editor */}
         {parsed && (
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-xl space-y-4 animate-in fade-in duration-200 shadow-xs">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-xl space-y-4 animate-in fade-in duration-200 shadow-xs max-h-[68vh] overflow-y-auto">
             <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 border-2 border-emerald-500 shrink-0 shadow-md">
                 {parsed.foto_url ? (
@@ -273,72 +233,153 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
             </div>
 
             {/* Editable fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Nombre</label>
-                <Input
-                  value={parsed.nombre}
-                  onChange={(e) => setParsed({ ...parsed, nombre: e.target.value })}
-                />
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Información del Jugador</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Nombre</label>
+                  <Input
+                    value={parsed.nombre}
+                    onChange={(e) => setParsed({ ...parsed, nombre: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Apellidos</label>
+                  <Input
+                    value={parsed.apellidos}
+                    onChange={(e) => setParsed({ ...parsed, apellidos: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Club Actual</label>
+                  <Input
+                    value={parsed.club_nombre}
+                    onChange={(e) => setParsed({ ...parsed, club_nombre: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Principal</label>
+                  <Select
+                    value={parsed.posicion}
+                    onChange={(e) => setParsed({ ...parsed, posicion: e.target.value as Posicion })}
+                    options={Object.entries(POSICION_LABELS).map(([k, v]) => ({ value: k, label: `${k} - ${v}` }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Detallada</label>
+                  <Select
+                    value={parsed.posicion_detallada}
+                    onChange={(e) => setParsed({ ...parsed, posicion_detallada: e.target.value as PosicionDetallada })}
+                    options={Object.entries(POSICION_DETALLADA_LABELS).map(([k, v]) => ({ value: k, label: v }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Categoría</label>
+                  <Select
+                    value={parsed.categoria}
+                    onChange={(e) => setParsed({ ...parsed, categoria: e.target.value as Categoria })}
+                    options={[
+                      { value: 'Tercera RFEF', label: 'Tercera RFEF' },
+                      { value: 'Segunda RFEF', label: 'Segunda RFEF' },
+                      { value: 'Otra', label: 'Otra' }
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Score Inicial Estimado (0-100)</label>
+                  <Input
+                    type="number"
+                    min="40"
+                    max="99"
+                    value={parsed.score_global}
+                    onChange={(e) => setParsed({ ...parsed, score_global: parseInt(e.target.value) || 75 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Valor de Mercado</label>
+                  <Input
+                    value={parsed.valor_mercado}
+                    onChange={(e) => setParsed({ ...parsed, valor_mercado: e.target.value })}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Apellidos</label>
-                <Input
-                  value={parsed.apellidos}
-                  onChange={(e) => setParsed({ ...parsed, apellidos: e.target.value })}
-                />
+            </div>
+
+            {/* Estadísticas básicas (Temporada Actual) */}
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <BarChart2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Estadísticas Básicas de Temporada
+                </p>
               </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Club Actual</label>
-                <Input
-                  value={parsed.club_nombre}
-                  onChange={(e) => setParsed({ ...parsed, club_nombre: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Principal</label>
-                <Select
-                  value={parsed.posicion}
-                  onChange={(e) => setParsed({ ...parsed, posicion: e.target.value as Posicion })}
-                  options={Object.entries(POSICION_LABELS).map(([k, v]) => ({ value: k, label: `${k} - ${v}` }))}
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Detallada</label>
-                <Select
-                  value={parsed.posicion_detallada}
-                  onChange={(e) => setParsed({ ...parsed, posicion_detallada: e.target.value as PosicionDetallada })}
-                  options={Object.entries(POSICION_DETALLADA_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Categoría</label>
-                <Select
-                  value={parsed.categoria}
-                  onChange={(e) => setParsed({ ...parsed, categoria: e.target.value as Categoria })}
-                  options={[
-                    { value: 'Tercera RFEF', label: 'Tercera RFEF' },
-                    { value: 'Segunda RFEF', label: 'Segunda RFEF' },
-                    { value: 'Otra', label: 'Otra' }
-                  ]}
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Score Inicial Estimado (0-100)</label>
-                <Input
-                  type="number"
-                  min="40"
-                  max="99"
-                  value={parsed.score_global}
-                  onChange={(e) => setParsed({ ...parsed, score_global: parseInt(e.target.value) || 75 })}
-                />
-              </div>
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Valor de Mercado</label>
-                <Input
-                  value={parsed.valor_mercado}
-                  onChange={(e) => setParsed({ ...parsed, valor_mercado: e.target.value })}
-                />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Partidos (PJ)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="60"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_partidos}
+                    onChange={(e) => setParsed({ ...parsed, est_partidos: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Minutos</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="5000"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_minutos}
+                    onChange={(e) => setParsed({ ...parsed, est_minutos: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Goles</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_goles}
+                    onChange={(e) => setParsed({ ...parsed, est_goles: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Asistencias</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_asistencias}
+                    onChange={(e) => setParsed({ ...parsed, est_asistencias: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Amarillas</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="30"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_amarillas}
+                    onChange={(e) => setParsed({ ...parsed, est_amarillas: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1 text-[11px] font-semibold text-center">Rojas</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="10"
+                    className="px-2 text-center font-mono"
+                    value={parsed.est_rojas}
+                    onChange={(e) => setParsed({ ...parsed, est_rojas: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
               </div>
             </div>
 
