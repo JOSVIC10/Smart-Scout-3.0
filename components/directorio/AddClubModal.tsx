@@ -102,12 +102,12 @@ export function AddClubModal({ isOpen, onClose, onClubCreated }: AddClubModalPro
 
         {/* Upload Escudo File Input */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-slate-300">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Escudo del Club (Supabase Storage)
           </label>
           <div className="flex items-center gap-3">
-            <label className="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-slate-700 bg-slate-900/60 hover:bg-slate-800/80 cursor-pointer text-xs text-slate-400 transition-colors">
-              <Upload className="w-4 h-4 text-emerald-400" />
+            <label className="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 cursor-pointer text-xs text-slate-600 dark:text-slate-400 transition-colors">
+              <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{archivoEscudo ? archivoEscudo.name : 'Seleccionar imagen de escudo (PNG/JPG)'}</span>
               <input
                 type="file"
@@ -119,7 +119,7 @@ export function AddClubModal({ isOpen, onClose, onClubCreated }: AddClubModalPro
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

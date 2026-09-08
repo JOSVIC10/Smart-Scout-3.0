@@ -16,6 +16,7 @@ import { CampogramaSection } from '@/components/campograma/CampogramaSection'
 import { EnDirectoSection } from '@/components/endirecto/EnDirectoSection'
 import { AiScoutModal } from '@/components/ai/AiScoutModal'
 import { FichaJugadorModal } from '@/components/directorio/FichaJugadorModal'
+import { QuickStartGuideModal } from '@/components/help/QuickStartGuideModal'
 import { obtenerModelos } from '@/lib/supabase/modelos'
 import { obtenerJugadoresConScoreModelo } from '@/lib/supabase/jugadores'
 import type { ModeloJuego, JugadorConClub } from '@/types/database'
@@ -36,6 +37,9 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
 
+  // Quick Start Guide Modal State
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
+
   // All available models (loaded from Supabase)
   const [allModels, setAllModels] = useState<ModeloJuego[]>([])
 
@@ -43,7 +47,6 @@ export default function Home() {
   const [activeModel, setActiveModel] = useState<ModeloJuego>(DEFAULT_MODEL)
 
   // Scores actualizados recientemente por auto-recálculo (jugadorId → score)
-  // Usado para actualizar DirectorioSection sin esperar a un remount completo
   const [recentScoreUpdates, setRecentScoreUpdates] = useState<Map<string, number>>(new Map())
 
   const handleScoreUpdated = (jugadorId: string, nuevoScore: number) => {
@@ -52,16 +55,16 @@ export default function Home() {
 
   const activeModelName = `${activeModel.nombre} (${activeModel.formacion ?? '4-3-3'})`
 
-  // AI Scout Assistant State
+  // AI Scout Assistant & Ficha Modal State
   const [isAiScoutOpen, setIsAiScoutOpen] = useState(false)
   const [allPlayersForAi, setAllPlayersForAi] = useState<JugadorConClub[]>([])
-  const [selectedPlayerFromAi, setSelectedPlayerFromAi] = useState<JugadorConClub | null>(null)
+  const [selectedPlayerModal, setSelectedPlayerModal] = useState<JugadorConClub | null>(null)
 
-  // Cargar jugadores con scoring del modelo activo para la IA
+  // Cargar jugadores con scoring del modelo activo
   useEffect(() => {
     obtenerJugadoresConScoreModelo(undefined, activeModel.id)
       .then(setAllPlayersForAi)
-      .catch((err) => console.warn('Error loading players for AI:', err))
+      .catch((err) => console.warn('Error loading players:', err))
   }, [activeModel.id])
 
   // Atajo de teclado global Ctrl+K / Cmd+K
@@ -81,7 +84,6 @@ export default function Home() {
     obtenerModelos()
       .then((mods) => {
         setAllModels(mods)
-        // If Supabase has models, use the first predefined one as default
         if (mods.length > 0) {
           const firstPredefined = mods.find((m) => m.es_predefinido) ?? mods[0]
           setActiveModel(firstPredefined)
@@ -92,22 +94,33 @@ export default function Home() {
       })
   }, [])
 
-  // When a model is activated in ModelosSection, also refresh the model list
   const handleSetActiveModel = (modelo: ModeloJuego) => {
     setActiveModel(modelo)
   }
 
-  const handleSelectPlayerFromDashboard = (j: JugadorConClub) => {
-    setActiveSection('jugadores')
+  // Abre la ficha técnica de un jugador directamente
+  const handleOpenPlayerFicha = (j: JugadorConClub) => {
+    setSelectedPlayerModal(j)
+  }
+
+  // Abre la ficha técnica del jugador más destacado (ejemplo para director deportivo)
+  const handleViewSamplePlayer = () => {
+    if (allPlayersForAi.length > 0) {
+      const topPlayer = [...allPlayersForAi].sort(
+        (a, b) => (b.score_global ?? 0) - (a.score_global ?? 0)
+      )[0]
+      setSelectedPlayerModal(topPlayer)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex font-sans text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 transition-colors duration-150">
       {/* Desktop Sidebar */}
       <Sidebar
         activeSection={activeSection}
         onSelectSection={setActiveSection}
         activeModelName={activeModelName}
+        onOpenGuide={() => setIsGuideOpen(true)}
       />
 
       {/* Mobile Navigation Drawer */}
@@ -117,11 +130,12 @@ export default function Home() {
         activeSection={activeSection}
         onSelectSection={setActiveSection}
         activeModelName={activeModelName}
+        onOpenGuide={() => setIsGuideOpen(true)}
       />
 
       {/* Main Workspace Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header — includes active model selector dropdown */}
+        {/* Top Header */}
         <Header
           activeSection={activeSection}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
@@ -132,6 +146,7 @@ export default function Home() {
           globalSearch={globalSearch}
           onGlobalSearchChange={setGlobalSearch}
           onOpenAiScout={() => setIsAiScoutOpen(true)}
+          onOpenGuide={() => setIsGuideOpen(true)}
         />
 
         {/* Section View Renderer */}
@@ -139,7 +154,9 @@ export default function Home() {
           {activeSection === 'dashboard' && (
             <DashboardSection
               onNavigate={setActiveSection}
-              onSelectPlayer={handleSelectPlayerFromDashboard}
+              onSelectPlayer={handleOpenPlayerFicha}
+              onViewSamplePlayer={handleViewSamplePlayer}
+              onOpenGuide={() => setIsGuideOpen(true)}
               activeModelName={activeModelName}
               activeModelId={activeModel.id}
             />
@@ -199,6 +216,13 @@ export default function Home() {
         </main>
       </div>
 
+      {/* Quick Start Guide Modal (Bajo demanda) */}
+      <QuickStartGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onNavigateSection={(sec) => setActiveSection(sec)}
+      />
+
       {/* Modal Asistente de IA */}
       <AiScoutModal
         isOpen={isAiScoutOpen}
@@ -206,20 +230,20 @@ export default function Home() {
         jugadores={allPlayersForAi}
         activeModelName={activeModelName}
         activeModelId={activeModel.id}
-        onSelectPlayer={(j) => setSelectedPlayerFromAi(j)}
+        onSelectPlayer={(j) => setSelectedPlayerModal(j)}
       />
 
-      {/* Ficha Jugador abierta desde IA */}
-      {selectedPlayerFromAi && (
+      {/* Ficha Jugador abierta desde Dashboard ("Ver ficha de ejemplo" o "Top Scouting") o IA */}
+      {selectedPlayerModal && (
         <FichaJugadorModal
-          isOpen={!!selectedPlayerFromAi}
-          onClose={() => setSelectedPlayerFromAi(null)}
-          jugador={selectedPlayerFromAi}
+          isOpen={!!selectedPlayerModal}
+          onClose={() => setSelectedPlayerModal(null)}
+          jugador={selectedPlayerModal}
           activeModelName={activeModelName}
           activeModelId={activeModel.id}
           onPlayerUpdated={(act) => {
             setAllPlayersForAi(prev => prev.map(p => p.id === act.id ? act : p))
-            setSelectedPlayerFromAi(act)
+            setSelectedPlayerModal(act)
           }}
         />
       )}

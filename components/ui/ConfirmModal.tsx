@@ -60,12 +60,12 @@ export function ConfirmModal({
               <AlertTriangle className="w-5 h-5" />
             )}
           </div>
-          <div className="text-sm text-slate-300 leading-relaxed pt-0.5">
+          <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed pt-0.5">
             {message}
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
           <Button
             variant="outline"
             size="sm"

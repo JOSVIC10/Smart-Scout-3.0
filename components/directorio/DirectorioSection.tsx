@@ -138,31 +138,31 @@ export function DirectorioSection({
   return (
     <div className="space-y-6">
       {/* Header Controls & Filters Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none space-y-4 transition-colors">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 Directorio de Jugadores
               </h2>
-              <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                 <span>Scores ponderados según modelo:</span>
-                <span className="text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 font-mono">
+                <span className="text-emerald-800 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-500/30 font-mono font-bold">
                   {activeModelName}
                 </span>
               </p>
             </div>
 
             {/* Selector de tipo: Observados / Todos / Plantilla */}
-            <div className="inline-flex items-center p-1 bg-slate-950 border border-slate-800/90 rounded-xl">
+            <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/90 rounded-xl">
               <button
                 type="button"
                 onClick={() => setTipoVista('observados')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   tipoVista === 'observados'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-slate-200 dark:border-emerald-500/30 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <Search className="w-3.5 h-3.5" />
@@ -171,10 +171,10 @@ export function DirectorioSection({
               <button
                 type="button"
                 onClick={() => setTipoVista('plantilla')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   tipoVista === 'plantilla'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-slate-200 dark:border-emerald-500/30 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
@@ -183,10 +183,10 @@ export function DirectorioSection({
               <button
                 type="button"
                 onClick={() => setTipoVista('todos')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                   tipoVista === 'todos'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-slate-200 dark:border-emerald-500/30 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 Todos
@@ -197,16 +197,16 @@ export function DirectorioSection({
             <button
               type="button"
               onClick={() => setSoloOportunidades(prev => !prev)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-xs ${
                 soloOportunidades
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-amber-500/10'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-amber-400 hover:border-amber-500/30'
+                  ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/50'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:text-amber-700 hover:border-amber-300 dark:bg-slate-950 dark:text-slate-400 dark:border-slate-800 dark:hover:text-amber-400'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               ⚡ Oportunidades 2026
               {soloOportunidades && (
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse ml-0.5" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse ml-0.5" />
               )}
             </button>
           </div>
@@ -240,7 +240,7 @@ export function DirectorioSection({
         </div>
 
         {/* Filter inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800/80">
           <Input
             placeholder="Buscar por nombre o club..."
             value={busqueda}
@@ -304,9 +304,9 @@ export function DirectorioSection({
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-          <Users className="w-10 h-10 text-slate-600 mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">No se encontraron jugadores</p>
+        <div className="text-center py-16 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 space-y-2 shadow-xs">
+          <Users className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-300">No se encontraron jugadores</p>
           <p className="text-xs text-slate-500">Prueba a ajustar o borrar los filtros seleccionados.</p>
         </div>
       )}

@@ -17,7 +17,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
   return (
-    <div className={clsx('flex items-center gap-1 border-b border-slate-800/80 pb-px overflow-x-auto no-scrollbar', className)}>
+    <div className={clsx('flex items-center gap-1 border-b border-slate-200 dark:border-slate-800/80 pb-px overflow-x-auto no-scrollbar', className)}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id
         return (
@@ -25,10 +25,10 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={clsx(
-              'flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap',
+              'flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all whitespace-nowrap',
               isActive
-                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 dark:border-emerald-500 dark:text-emerald-400 dark:bg-emerald-500/5'
+                : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-700'
             )}
           >
             {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
@@ -37,7 +37,9 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps) {
               <span
                 className={clsx(
                   'px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
-                  isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'
+                  isActive
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
                 )}
               >
                 {tab.badge}

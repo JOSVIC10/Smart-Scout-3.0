@@ -82,10 +82,10 @@ function SortableItem({ id, nombre, rango, peso, disabled }: SortableItemProps) 
       style={style}
       className={`p-3 rounded-xl border flex items-center justify-between transition-all select-none ${
         isDragging
-          ? 'bg-emerald-950/80 border-emerald-500/80 shadow-2xl z-20 scale-[1.02]'
+          ? 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-500 shadow-2xl z-20 scale-[1.02]'
           : disabled
-          ? 'bg-slate-900/40 border-slate-800/50 opacity-60'
-          : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+          ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/50 opacity-60'
+          : 'bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -94,27 +94,27 @@ function SortableItem({ id, nombre, rango, peso, disabled }: SortableItemProps) 
             type="button"
             {...attributes}
             {...listeners}
-            className="p-1 rounded text-slate-500 hover:text-slate-200 cursor-grab active:cursor-grabbing"
+            className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-grab active:cursor-grabbing"
           >
             <GripVertical className="w-4 h-4" />
           </button>
         ) : (
-          <div className="p-1 text-slate-700">
+          <div className="p-1 text-slate-400 dark:text-slate-600">
             <Lock className="w-3.5 h-3.5" />
           </div>
         )}
 
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-md bg-slate-800 text-slate-300 font-mono font-bold text-xs flex items-center justify-center border border-slate-700">
+          <span className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono font-bold text-xs flex items-center justify-center border border-slate-300 dark:border-slate-700">
             #{rango}
           </span>
-          <span className="text-xs font-bold text-slate-200">{nombre}</span>
+          <span className="text-xs font-bold text-slate-900 dark:text-slate-200">{nombre}</span>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-400 font-mono">Rank-Sum:</span>
-        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-mono font-medium">Rank-Sum:</span>
+        <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/30 px-2 py-0.5 rounded border">
           {(peso * 100).toFixed(1)}%
         </span>
       </div>
@@ -154,13 +154,13 @@ function ScorePreviewRow({ jugador, posicion, ponderaciones }: ScorePreviewRowPr
   if (jugador.posicion !== posicion) return null
 
   return (
-    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-xs">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-300">
+        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-700 dark:text-slate-300">
           {jugador.nombre[0]}{jugador.apellidos[0]}
         </div>
         <div>
-          <p className="text-xs font-semibold text-slate-200 leading-tight">
+          <p className="text-xs font-semibold text-slate-900 dark:text-slate-200 leading-tight">
             {jugador.nombre} {jugador.apellidos}
           </p>
           <p className="text-[10px] text-slate-500">{jugador.club?.nombre ?? 'Sin club'}</p>
@@ -246,17 +246,17 @@ function NuevoModeloModal({ isOpen, onClose, onCreated }: NuevoModeloModalProps)
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">Descripción</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Descripción</label>
             <textarea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
               rows={3}
               placeholder="Descripción táctica del modelo..."
-              className="w-full px-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/70 resize-none transition-colors"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500/70 resize-none transition-colors shadow-xs"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-300 mb-1.5 block">Formación por defecto</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Formación por defecto</label>
             <Input
               value={formacion}
               onChange={(e) => setFormacion(e.target.value)}
@@ -436,14 +436,14 @@ export function ModelosSection({ activeModelId, onSetActiveModel }: ModelosSecti
   return (
     <div className="space-y-6">
       {/* ── Top Bar ────────────────────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <Sliders className="w-4 h-4 text-emerald-400" />
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center">
+            <Sliders className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-100">Modelos de Juego</h2>
-            <p className="text-xs text-slate-400">Configurador táctico · Ponderaciones Rank-Sum</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Modelos de Juego</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Configurador táctico · Ponderaciones Rank-Sum</p>
           </div>
         </div>
 
@@ -466,11 +466,11 @@ export function ModelosSection({ activeModelId, onSetActiveModel }: ModelosSecti
           <Card>
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <Lock className="w-3.5 h-3.5 text-amber-500" />
                 Modelos Predefinidos
                 <Badge variant="secondary" size="sm">{modelosPredefinidos.length}</Badge>
               </CardTitle>
-              <CardDescription>Solo lectura — no se pueden editar ni borrar</CardDescription>
+              <CardDescription>Solo lectura — modelos tácticos del club</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {modelosPredefinidos.map((m) => (
@@ -479,22 +479,22 @@ export function ModelosSection({ activeModelId, onSetActiveModel }: ModelosSecti
                   onClick={() => setSelectedModelo(m)}
                   className={`w-full text-left p-3 rounded-xl border transition-all ${
                     selectedModelo?.id === m.id
-                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
-                      : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-900 dark:text-emerald-400 shadow-xs'
+                      : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold">{m.nombre}</span>
                     <div className="flex items-center gap-1">
                       {m.id === activeModelId && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-500 animate-pulse" />
                       )}
-                      <span className="text-[9px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
+                      <span className="text-[9px] font-mono text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold">
                         {m.formacion}
                       </span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5 truncate">{m.descripcion}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{m.descripcion}</p>
                 </button>
               ))}
             </CardContent>
@@ -527,8 +527,8 @@ export function ModelosSection({ activeModelId, onSetActiveModel }: ModelosSecti
                       onClick={() => setSelectedModelo(m)}
                       className={`w-full text-left p-3 rounded-xl border transition-all ${
                         selectedModelo?.id === m.id
-                          ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-400'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -723,7 +723,7 @@ export function ModelosSection({ activeModelId, onSetActiveModel }: ModelosSecti
               </Card>
             </>
           ) : (
-            <div className="h-64 flex items-center justify-center text-slate-600 text-xs rounded-2xl border border-slate-800/60 bg-slate-900/30">
+            <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-600 text-xs rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/30">
               Selecciona un modelo de la lista para editarlo
             </div>
           )}

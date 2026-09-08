@@ -158,8 +158,8 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
 
   if (!trackingData || trackingData.length === 0) {
     return (
-      <Card className="bg-slate-900 border-slate-800">
-        <CardContent className="p-8 text-center text-slate-400">
+      <Card>
+        <CardContent className="p-8 text-center text-slate-500 dark:text-slate-400">
           <p>No hay datos de tracking por frame (tracking_data) en el telemetry.json.</p>
           <p className="text-sm mt-2">Asegúrate de haber procesado el video con la versión más reciente del pipeline.</p>
         </CardContent>
@@ -260,7 +260,7 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
         </div>
 
         {/* Timeline & Controls */}
-        <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-900/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 shadow-xs">
           <Button 
             variant="secondary" 
             size="icon"
@@ -271,7 +271,7 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
           </Button>
 
           <div className="flex-1 space-y-1">
-            <div className="flex justify-between text-xs text-slate-400 font-mono">
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-mono">
               <span>{formatTime(currentFrame)}</span>
               <span>{formatTime(totalFrames)}</span>
             </div>
@@ -281,7 +281,7 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
               max={totalFrames - 1} 
               value={currentFrame}
               onChange={handleSliderChange}
-              className="w-full accent-purple-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-emerald-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
@@ -289,7 +289,7 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
             variant="outline" 
             size="sm"
             onClick={cycleSpeed}
-            className="w-16 shrink-0 font-mono bg-slate-800 border-slate-700 text-xs hover:bg-slate-700"
+            className="w-16 shrink-0 font-mono text-xs"
           >
             {playbackSpeed}x
           </Button>
@@ -299,25 +299,25 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
       {/* RIGHT: STATS PANEL */}
       <div className="space-y-4">
         {/* Real-time Stats */}
-        <Card className="bg-slate-900 border-slate-800 shadow-xl">
-          <CardHeader className="pb-3 border-b border-slate-800/50">
+        <Card>
+          <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/50">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Clock className="w-4 h-4 text-purple-400" />
+              <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               Tiempo Real
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-5">
             <div>
-              <p className="text-xs text-slate-400 mb-2 uppercase font-bold tracking-wider">Balón en Frame</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase font-bold tracking-wider">Balón en Frame</p>
               <div className="flex items-center gap-3">
                 {currentPossessionTeam ? (
                   <div className={`px-3 py-1 rounded text-xs font-bold ${
-                    String(currentPossessionTeam) === '1' ? 'bg-blue-900/50 text-blue-400 border border-blue-800' : 'bg-red-900/50 text-red-400 border border-red-800'
+                    String(currentPossessionTeam) === '1' ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-red-50 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
                   }`}>
                     Equipo {currentPossessionTeam}
                   </div>
                 ) : (
-                  <div className="px-3 py-1 rounded text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                  <div className="px-3 py-1 rounded text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     Disputa / Libre
                   </div>
                 )}
@@ -325,10 +325,10 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
             </div>
 
             <div>
-              <p className="text-xs text-slate-400 mb-2 uppercase font-bold tracking-wider flex items-center gap-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase font-bold tracking-wider flex items-center gap-1">
                 <Users className="w-3 h-3" /> Jugadores Detectados
               </p>
-              <p className="text-2xl font-black text-slate-200">
+              <p className="text-2xl font-black text-slate-900 dark:text-slate-200">
                 {frameData.players.length} <span className="text-sm font-normal text-slate-500">+ {frameData.referees.length} Árbitros</span>
               </p>
             </div>
@@ -336,14 +336,14 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
         </Card>
 
         {/* Global Possession Summary */}
-        <Card className="bg-slate-900 border-slate-800 shadow-xl">
-          <CardHeader className="pb-3 border-b border-slate-800/50">
-            <CardTitle className="text-sm flex items-center gap-2 text-slate-200">
+        <Card>
+          <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/50">
+            <CardTitle className="text-sm flex items-center gap-2 text-slate-900 dark:text-slate-200">
               Posesión Global
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-800">
+            <div className="flex h-3 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
               <div 
                 className="bg-blue-500 transition-all duration-500" 
                 style={{ width: `${telemetry.possession?.['1'] || 0}%` }}
@@ -354,17 +354,17 @@ export function TrackingVisualizer({ telemetry }: TrackingVisualizerProps) {
               />
             </div>
             <div className="flex justify-between mt-2 text-xs font-bold">
-              <span className="text-blue-400">Local {(telemetry.possession?.['1'] || 0).toFixed(1)}%</span>
-              <span className="text-red-400">Visitante {(telemetry.possession?.['2'] || 0).toFixed(1)}%</span>
+              <span className="text-blue-600 dark:text-blue-400">Local {(telemetry.possession?.['1'] || 0).toFixed(1)}%</span>
+              <span className="text-red-600 dark:text-red-400">Visitante {(telemetry.possession?.['2'] || 0).toFixed(1)}%</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Interval Possession */}
         {intervalPossession.length > 0 && (
-          <Card className="bg-slate-900 border-slate-800 shadow-xl">
-            <CardHeader className="pb-3 border-b border-slate-800/50">
-              <CardTitle className="text-sm text-slate-200">
+          <Card>
+            <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800/50">
+              <CardTitle className="text-sm text-slate-900 dark:text-slate-200">
                 Evolución (Intervalos 15')
               </CardTitle>
             </CardHeader>

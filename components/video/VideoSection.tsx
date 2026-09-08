@@ -361,12 +361,12 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
   return (
     <div className="space-y-4">
       {/* ——— Top Bar: Video selector + Add button ——— */}
-      <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs transition-colors">
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <Film className="w-4 h-4 text-emerald-400" />
+            <Film className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h2 className="text-sm font-bold text-slate-100">Análisis de Vídeo</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Análisis de Vídeo</h2>
           <Badge variant="secondary" size="sm">{videos.length} vídeos</Badge>
         </div>
 
@@ -519,8 +519,8 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
             {/* Keyboard hints panel */}
             {showKeyboardHints && (
-              <div className="px-4 py-2.5 bg-slate-900/80 border-t border-slate-800">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Atajos de teclado</p>
+              <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800">
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Atajos de teclado</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { key: 'E', desc: 'Marcar Efectiva' },
@@ -529,10 +529,10 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                     { key: '← →', desc: 'Retroceder/Avanzar 5s' },
                   ].map(({ key, desc }) => (
                     <div key={key} className="flex items-center gap-1.5">
-                      <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono font-bold text-slate-300">
+                      <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
                         {key}
                       </kbd>
-                      <span className="text-[10px] text-slate-500">{desc}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">{desc}</span>
                     </div>
                   ))}
                 </div>
@@ -544,24 +544,24 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
           <Card>
             <CardHeader className="flex items-center justify-between">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Tag className="w-4 h-4 text-emerald-400" />
+                <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 Acciones Etiquetadas
               </CardTitle>
 
               {/* Stats summary */}
               {totalAcciones > 0 && (
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-slate-500">
-                    <span className="text-emerald-400 font-bold">{efectivas}</span>/{totalAcciones} efectivas
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{efectivas}</span>/{totalAcciones} efectivas
                   </span>
                   <div className="flex items-center gap-1">
-                    <div className="w-16 h-1 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="w-16 h-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-emerald-500 transition-all"
                         style={{ width: `${pctEfectividad}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-400">{pctEfectividad}%</span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{pctEfectividad}%</span>
                   </div>
                   <Badge variant="primary" size="sm">{totalAcciones}</Badge>
                 </div>
@@ -570,18 +570,18 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
             <CardContent className="p-0">
               {acciones.length > 0 ? (
-                <div className="divide-y divide-slate-800/60 max-h-[340px] overflow-y-auto">
+                <div className="divide-y divide-slate-200 dark:divide-slate-800/60 max-h-[340px] overflow-y-auto">
                   {acciones.map((acc) => (
                     <div
                       key={acc.id}
-                      className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-900/40 transition-colors group"
+                      className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group"
                     >
                       {/* Left: timestamp + metric info */}
                       <div className="flex items-center gap-3 min-w-0">
                         {/* Timestamp button — seeks to clip */}
                         <button
                           onClick={() => seekToTimestamp(acc.minuto_video, acc.segundo_video)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono font-bold text-xs hover:bg-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/25 font-mono font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all hover:scale-105 shrink-0"
                           title="Saltar al minuto en el reproductor"
                         >
                           <Play className="w-2.5 h-2.5" />
@@ -592,18 +592,18 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                         <div className="min-w-0">
                           {/* N2 metric (primary) */}
                           {acc.metrica_n2 && (
-                            <p className="text-[11px] font-bold text-slate-200 truncate">
+                            <p className="text-[11px] font-bold text-slate-900 dark:text-slate-200 truncate">
                               {acc.metrica_n2.nombre}
                             </p>
                           )}
                           {/* N1 metric (fallback / secondary) */}
-                          <p className={`truncate ${acc.metrica_n2 ? 'text-[9px] text-slate-500' : 'text-[11px] font-bold text-slate-200'}`}>
+                          <p className={`truncate ${acc.metrica_n2 ? 'text-[9px] text-slate-500 dark:text-slate-400' : 'text-[11px] font-bold text-slate-900 dark:text-slate-200'}`}>
                             {acc.metrica_n1?.nombre}
                           </p>
                           {/* Zone */}
                           {acc.zona && (
                             <p className="text-[9px] text-slate-500 flex items-center gap-1 mt-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-600 inline-block" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 inline-block" />
                               {ZONA_LABELS[acc.zona]}
                             </p>
                           )}
@@ -723,10 +723,10 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
               {/* —— Step 3: Resultado toggle —— */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[9px] font-black">3</span>
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[9px] font-black">3</span>
                   Resultado
-                  <span className="text-[9px] text-slate-600 font-normal ml-auto">E / N</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-600 font-normal ml-auto">E / N</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -734,8 +734,8 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                     onClick={() => setResultado('efectiva')}
                     className={`py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                       resultado === 'efectiva'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
-                        : 'bg-slate-900/60 text-slate-500 border-slate-800 hover:border-slate-700 hover:text-slate-300'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/50 shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-slate-300'
                     }`}
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -746,8 +746,8 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                     onClick={() => setResultado('no_efectiva')}
                     className={`py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                       resultado === 'no_efectiva'
-                        ? 'bg-red-500/20 text-red-400 border-red-500/50 shadow-sm shadow-red-500/10'
-                        : 'bg-slate-900/60 text-slate-500 border-slate-800 hover:border-slate-700 hover:text-slate-300'
+                        ? 'bg-red-50 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/50 shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-slate-300'
                     }`}
                   >
                     <XCircle className="w-4 h-4" />
@@ -758,8 +758,8 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
               {/* —— Step 4: PitchMap —— */}
               <div>
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[9px] font-black">4</span>
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[9px] font-black">4</span>
                   Zona del Campo
                 </label>
                 <PitchMap
@@ -771,17 +771,17 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
 
               {/* —— Step 5: Optional note —— */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-slate-700 text-slate-400 flex items-center justify-center text-[9px] font-black">5</span>
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-400 flex items-center justify-center text-[9px] font-black">5</span>
                   Nota
-                  <span className="text-[9px] text-slate-600 font-normal">(opcional)</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-600 font-normal">(opcional)</span>
                 </label>
                 <textarea
                   value={nota}
                   onChange={e => setNota(e.target.value)}
                   placeholder="Contexto o observación adicional..."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 focus:ring-1 focus:ring-emerald-500/20 transition-all resize-none"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 transition-all resize-none shadow-xs"
                 />
               </div>
 
@@ -796,16 +796,16 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
                   (!selectedMetricaN2 && !selectedMetricaN1)
                 }
                 className={`
-                  w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border
+                  w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border shadow-xs
                   ${tagFeedback === 'success'
-                    ? 'bg-emerald-500/30 text-emerald-300 border-emerald-500/50'
+                    ? 'bg-emerald-600 text-white border-emerald-600'
                     : tagFeedback === 'error'
-                      ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                      ? 'bg-red-600 text-white border-red-600'
                       : savingAction
-                        ? 'bg-emerald-500/10 text-emerald-500/50 border-emerald-500/20 cursor-not-allowed'
+                        ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30 cursor-not-allowed'
                         : (!selectedVideo || !selectedJugador || (!selectedMetricaN2 && !selectedMetricaN1))
-                          ? 'bg-slate-900/40 text-slate-600 border-slate-800 cursor-not-allowed'
-                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30 hover:border-emerald-500/60 shadow-sm shadow-emerald-500/10'
+                          ? 'bg-slate-100 dark:bg-slate-900/40 text-slate-400 dark:text-slate-600 border-slate-200 dark:border-slate-800 cursor-not-allowed'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-md hover:shadow-lg'
                   }
                 `}
               >

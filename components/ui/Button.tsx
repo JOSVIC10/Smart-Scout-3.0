@@ -21,12 +21,12 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
 
   const variants = {
-    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 border border-emerald-500/30',
-    secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700',
-    outline: 'bg-transparent hover:bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700',
-    danger: 'bg-red-600/90 hover:bg-red-500 text-white shadow-lg shadow-red-900/20 border border-red-500/30',
-    ghost: 'bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white',
-    glass: 'bg-slate-800/60 hover:bg-slate-700/80 text-slate-200 border border-white/10 backdrop-blur-md',
+    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-700/20 border border-emerald-600',
+    secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100 dark:border-slate-700',
+    outline: 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-300 dark:bg-transparent dark:hover:bg-slate-800/80 dark:text-slate-300 dark:hover:text-white dark:border-slate-700',
+    danger: 'bg-red-600 hover:bg-red-500 text-white shadow-sm border border-red-600',
+    ghost: 'bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-900 dark:hover:bg-slate-800/60 dark:text-slate-300 dark:hover:text-white',
+    glass: 'bg-white/80 hover:bg-white text-slate-800 border border-slate-200 shadow-sm backdrop-blur-md dark:bg-slate-800/60 dark:hover:bg-slate-700/80 dark:text-slate-200 dark:border-white/10',
   }
 
   const sizes = {

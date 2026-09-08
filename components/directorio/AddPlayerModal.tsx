@@ -203,11 +203,11 @@ export function AddPlayerModal({ isOpen, onClose, onPlayerCreated }: AddPlayerMo
 
         {/* Player Photo Upload */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-slate-300">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Foto del Jugador (Supabase Storage: fotos-jugadores)
           </label>
-          <label className="flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-slate-700 bg-slate-900/60 hover:bg-slate-800/80 cursor-pointer text-xs text-slate-400 transition-colors">
-            <Upload className="w-4 h-4 text-emerald-400" />
+          <label className="flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 cursor-pointer text-xs text-slate-600 dark:text-slate-400 transition-colors">
+            <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>{archivoFoto ? archivoFoto.name : 'Seleccionar fotografía (JPG/PNG)'}</span>
             <input
               type="file"
@@ -218,7 +218,7 @@ export function AddPlayerModal({ isOpen, onClose, onPlayerCreated }: AddPlayerMo
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

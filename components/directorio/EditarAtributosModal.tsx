@@ -144,44 +144,44 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
   }
 
   return (
-    <div className="bg-slate-900 text-slate-100 p-2">
-      <div className="mb-6 border-b border-slate-800 pb-4">
-        <h2 className="text-xl font-bold">Editar Atributos - {jugador.nombre} {jugador.apellidos}</h2>
+    <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2 transition-colors">
+      <div className="mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Editar Atributos — {jugador.nombre} {jugador.apellidos}</h2>
       </div>
       <form onSubmit={handleSave} className="space-y-6">
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Col 1: Datos Básicos */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-emerald-400 uppercase border-b border-slate-800 pb-2">Datos Básicos</h3>
+            <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase border-b border-slate-200 dark:border-slate-800 pb-2">Datos Básicos</h3>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Nombre</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Nombre</label>
               <Input value={nombre} onChange={e => setNombre(e.target.value)} required />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Apellidos</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Apellidos</label>
               <Input value={apellidos} onChange={e => setApellidos(e.target.value)} required />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Fecha Nacimiento</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Fecha Nacimiento</label>
               <Input type="date" value={fechaNacimiento} onChange={e => setFechaNacimiento(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Nacionalidad</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Nacionalidad</label>
               <Input value={nacionalidad} onChange={e => setNacionalidad(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Altura (cm)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Altura (cm)</label>
                 <Input type="number" value={altura} onChange={e => setAltura(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Dorsal</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Dorsal</label>
                 <Input type="number" value={dorsal} onChange={e => setDorsal(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Pie Preferido</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Pie Preferido</label>
               <Select 
                 value={pie} 
                 onChange={e => setPie(e.target.value as PiePreferido)}
@@ -193,7 +193,7 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Posición Principal</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Posición Principal</label>
               <Select 
                 value={posicion} 
                 onChange={e => setPosicion(e.target.value as Posicion)}
@@ -201,68 +201,68 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Score Global Manual (Sobrescribir)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Score Global Manual (Sobrescribir)</label>
               <Input type="number" step="0.01" value={scoreGlobal} onChange={e => setScoreGlobal(e.target.value)} placeholder="Ej: 85.50" />
             </div>
           </div>
 
           {/* Col 2: Extras y Perfil */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-emerald-400 uppercase border-b border-slate-800 pb-2">Perfil & Contrato</h3>
+            <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase border-b border-slate-200 dark:border-slate-800 pb-2">Perfil & Contrato</h3>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Valor de Mercado</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Valor de Mercado</label>
               <Input value={valorMercado} onChange={e => setValorMercado(e.target.value)} placeholder="Ej: 150.000 €" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Fin de Contrato</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Fin de Contrato</label>
               <Input value={finContrato} onChange={e => setFinContrato(e.target.value)} placeholder="Ej: 30 JUN 2027" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Estilo de Juego</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Estilo de Juego</label>
               <Input value={estiloJuego} onChange={e => setEstiloJuego(e.target.value)} placeholder="Ej: Rápido, Profundo..." />
             </div>
             
-            <h3 className="text-sm font-bold text-emerald-400 uppercase border-b border-slate-800 pb-2 mt-6 pt-6">Valoraciones del Scout</h3>
+            <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase border-b border-slate-200 dark:border-slate-800 pb-2 mt-6 pt-6">Valoraciones del Scout</h3>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Puntos Fuertes (separados por coma)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Puntos Fuertes (separados por coma)</label>
               <Input value={puntosFuertes} onChange={e => setPuntosFuertes(e.target.value)} placeholder="Velocidad, Regate, Tiro..." />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Aspectos a Mejorar (separados por coma)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Aspectos a Mejorar (separados por coma)</label>
               <Input value={puntosDebiles} onChange={e => setPuntosDebiles(e.target.value)} placeholder="Juego aéreo, Pierna mala..." />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1">Carácter / Notas</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Carácter / Notas</label>
               <Input value={caracter} onChange={e => setCaracter(e.target.value)} placeholder="Trabajador, Líder, Adaptable..." />
             </div>
           </div>
 
           {/* Col 3: Estadísticas Manuales de Temporada */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-emerald-400 uppercase border-b border-slate-800 pb-2">Estadísticas Temp. 2026</h3>
+            <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase border-b border-slate-200 dark:border-slate-800 pb-2">Estadísticas Temp. 2026</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Partidos (PJ)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Partidos (PJ)</label>
                 <Input type="number" value={estPartidos} onChange={e => setEstPartidos(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Minutos (MIN)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Minutos (MIN)</label>
                 <Input type="number" value={estMinutos} onChange={e => setEstMinutos(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Goles</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Goles</label>
                 <Input type="number" value={estGoles} onChange={e => setEstGoles(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">Asistencias</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">Asistencias</label>
                 <Input type="number" value={estAsistencias} onChange={e => setEstAsistencias(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">T. Amarillas</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">T. Amarillas</label>
                 <Input type="number" value={estAmarillas} onChange={e => setEstAmarillas(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1">T. Rojas</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1">T. Rojas</label>
                 <Input type="number" value={estRojas} onChange={e => setEstRojas(e.target.value)} />
               </div>
             </div>
@@ -270,12 +270,12 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
         </div>
 
         {metricas.length > 0 && (
-          <div className="space-y-4 pt-4 border-t border-slate-800">
-            <h3 className="text-sm font-bold text-emerald-400 uppercase border-b border-slate-800 pb-2">Atributos del Radar (0-100)</h3>
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase border-b border-slate-200 dark:border-slate-800 pb-2">Atributos del Radar (0-100)</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {metricas.map(m => (
                 <div key={m.codigo}>
-                  <label className="block text-xs font-bold text-slate-400 mb-1 truncate" title={m.nombre}>{m.nombre}</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-400 mb-1 truncate" title={m.nombre}>{m.nombre}</label>
                   <Input 
                     type="number" 
                     min="0" 
@@ -289,7 +289,7 @@ export function EditarAtributosForm({ onCancel, jugador, valoracionActual, metri
           </div>
         )}
 
-        <div className="flex flex-col gap-2 pt-4 border-t border-slate-800">
+        <div className="flex flex-col gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
           {error && (
             <div className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-sm mb-2">
               {error}

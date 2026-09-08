@@ -206,19 +206,19 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
       <div className="space-y-5">
         {/* Input URL */}
         <form onSubmit={handleAnalyze} className="space-y-3">
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Enlace de BeSoccer, LaPreferente o ficha web
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Link2 className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+              <Link2 className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 dark:text-slate-500" />
               <input
                 type="url"
                 required
                 placeholder="https://es.besoccer.com/jugador/..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors shadow-xs"
               />
             </div>
             <Button
@@ -230,43 +230,43 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
               {analyzing ? 'Extrayendo...' : 'Analizar'}
             </Button>
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+          <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
             <span>Portales compatibles:</span>
-            <span className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">BeSoccer</span>
-            <span className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">LaPreferente</span>
-            <span className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">Transfermarkt / Web</span>
+            <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono">BeSoccer</span>
+            <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono">LaPreferente</span>
+            <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono">Transfermarkt / Web</span>
           </div>
         </form>
 
         {/* Error notice */}
         {error && (
-          <div className="p-3 bg-red-950/50 border border-red-800 rounded-lg flex items-start gap-2.5 text-red-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2.5 text-red-700 dark:text-red-300 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
             <p>{error}</p>
           </div>
         )}
 
         {/* Live Parsed Preview & Editor */}
         {parsed && (
-          <div className="p-4 bg-slate-900/90 border border-slate-700 rounded-xl space-y-4 animate-in fade-in duration-200">
-            <div className="flex items-center gap-3.5 pb-3 border-b border-slate-800">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-800 border-2 border-emerald-500 shrink-0 shadow-md">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-xl space-y-4 animate-in fade-in duration-200 shadow-xs">
+            <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 border-2 border-emerald-500 shrink-0 shadow-md">
                 {parsed.foto_url ? (
                   <img src={parsed.foto_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 bg-slate-800 text-base">
+                  <div className="w-full h-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 text-base">
                     {parsed.nombre.charAt(0)}{parsed.apellidos.charAt(0)}
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                   Datos detectados automáticamente
                 </span>
-                <h4 className="text-base font-bold text-slate-100 truncate">
+                <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
                   {parsed.nombre} {parsed.apellidos}
                 </h4>
-                <p className="text-xs text-slate-400 truncate">
+                <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                   {parsed.club_nombre} • {parsed.posicion}
                 </p>
               </div>
@@ -275,28 +275,28 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
             {/* Editable fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Nombre</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Nombre</label>
                 <Input
                   value={parsed.nombre}
                   onChange={(e) => setParsed({ ...parsed, nombre: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Apellidos</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Apellidos</label>
                 <Input
                   value={parsed.apellidos}
                   onChange={(e) => setParsed({ ...parsed, apellidos: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Club Actual</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Club Actual</label>
                 <Input
                   value={parsed.club_nombre}
                   onChange={(e) => setParsed({ ...parsed, club_nombre: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Posición Principal</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Principal</label>
                 <Select
                   value={parsed.posicion}
                   onChange={(e) => setParsed({ ...parsed, posicion: e.target.value as Posicion })}
@@ -304,7 +304,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Posición Detallada</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Posición Detallada</label>
                 <Select
                   value={parsed.posicion_detallada}
                   onChange={(e) => setParsed({ ...parsed, posicion_detallada: e.target.value as PosicionDetallada })}
@@ -312,7 +312,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Categoría</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Categoría</label>
                 <Select
                   value={parsed.categoria}
                   onChange={(e) => setParsed({ ...parsed, categoria: e.target.value as Categoria })}
@@ -324,7 +324,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Score Inicial Estimado (0-100)</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Score Inicial Estimado (0-100)</label>
                 <Input
                   type="number"
                   min="40"
@@ -334,7 +334,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Valor de Mercado</label>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Valor de Mercado</label>
                 <Input
                   value={parsed.valor_mercado}
                   onChange={(e) => setParsed({ ...parsed, valor_mercado: e.target.value })}
@@ -343,7 +343,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cancelar
               </Button>

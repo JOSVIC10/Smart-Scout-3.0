@@ -123,12 +123,12 @@ export function ComparadorSection({ activeModelName, activeModelId }: Comparador
 
   return (
     <div className="space-y-6">
-      {/* Top Filter Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+      {/* Header Controls */}
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none space-y-4 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <GitCompare className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-lg font-bold text-slate-100">Comparador Cara a Cara</h2>
+            <GitCompare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Comparador Cara a Cara</h2>
           </div>
 
           {/* Position Selector */}
@@ -146,7 +146,7 @@ export function ComparadorSection({ activeModelName, activeModelId }: Comparador
         </div>
 
         {/* Player Selectors (3 slots) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800/80">
           <Select
             label="Jugador 1"
             value={player1Id}
@@ -251,46 +251,46 @@ export function ComparadorSection({ activeModelName, activeModelId }: Comparador
         </Card>
 
         {/* Verdict Card */}
-        <Card className="border-emerald-500/30 bg-gradient-to-b from-slate-900 via-slate-900/90 to-emerald-950/20">
+        <Card className="border border-emerald-300 dark:border-emerald-500/30 bg-gradient-to-b from-emerald-50/70 via-white to-white dark:from-slate-900 dark:via-slate-900/90 dark:to-emerald-950/20 shadow-sm dark:shadow-none">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-emerald-400" /> Veredicto de Compatibilidad
+              <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Veredicto de Compatibilidad
             </CardTitle>
             <CardDescription>Recomendación para {activeModelName}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {ganador ? (
-              <div className="p-4 rounded-xl bg-slate-950/80 border border-emerald-500/30 space-y-3">
+              <div className="p-4 rounded-xl bg-white dark:bg-slate-950/80 border border-emerald-200 dark:border-emerald-500/30 space-y-3 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center justify-center text-sm">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-sm">
                     #1
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-100">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                       {ganador.nombre} {ganador.apellidos}
                     </h3>
-                    <p className="text-xs text-slate-400">{ganador.club?.nombre}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{ganador.club?.nombre}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                  <span className="text-slate-400">Score de Compatibilidad:</span>
-                  <span className="font-bold text-emerald-400 text-base">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Score de Compatibilidad:</span>
+                  <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-base">
                     {ganador.score_global}/100
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-300 italic pt-1">
+                <p className="text-xs text-slate-600 dark:text-slate-300 italic pt-1">
                   Este jugador ofrece la mayor alineación global con los requisitos tácticos de la posición{' '}
-                  <strong className="text-emerald-400">{ganador.posicion}</strong>.
+                  <strong className="text-emerald-700 dark:text-emerald-400">{ganador.posicion}</strong>.
                 </p>
 
                 {fortalezasDiferenciales.length > 0 && (
-                  <div className="pt-2 border-t border-slate-800">
-                    <p className="text-xs font-semibold text-slate-300 mb-1">Fortalezas Diferenciales:</p>
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fortalezas Diferenciales:</p>
                     <div className="flex flex-wrap gap-1">
                       {fortalezasDiferenciales.map(f => (
-                        <Badge key={f} variant="outline" size="sm" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                        <Badge key={f} variant="outline" size="sm" className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
                           {f}
                         </Badge>
                       ))}
@@ -315,7 +315,7 @@ export function ComparadorSection({ activeModelName, activeModelId }: Comparador
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 dark:bg-slate-950 dark:text-slate-400 dark:border-slate-800 uppercase font-semibold">
                 <tr>
                   <th className="p-3">Métrica N2</th>
                   {p1 && <th className="p-3 text-center">{p1.nombre} {p1.apellidos}</th>}
@@ -323,22 +323,22 @@ export function ComparadorSection({ activeModelName, activeModelId }: Comparador
                   {p3 && <th className="p-3 text-center">{p3.nombre} {p3.apellidos}</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
                 {/* Global Score Row */}
-                <tr className="bg-slate-900/60 font-bold text-sm">
-                  <td className="p-3 text-slate-100">Score Global</td>
+                <tr className="bg-slate-100/60 dark:bg-slate-900/60 font-bold text-sm">
+                  <td className="p-3 text-slate-900 dark:text-slate-100">Score Global</td>
                   {p1 && (
-                    <td className="p-3 text-center text-emerald-400">
+                    <td className="p-3 text-center text-emerald-700 dark:text-emerald-400 font-extrabold">
                       {p1.score_global ?? '—'}
                     </td>
                   )}
                   {p2 && (
-                    <td className="p-3 text-center text-emerald-400">
+                    <td className="p-3 text-center text-emerald-700 dark:text-emerald-400 font-extrabold">
                       {p2.score_global ?? '—'}
                     </td>
                   )}
                   {p3 && (
-                    <td className="p-3 text-center text-emerald-400">
+                    <td className="p-3 text-center text-emerald-700 dark:text-emerald-400 font-extrabold">
                       {p3.score_global ?? '—'}
                     </td>
                   )}

@@ -433,7 +433,7 @@ export function FichaJugadorModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Player Card" size="4xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Ficha del Jugador" size="4xl">
       <div className="absolute top-4 right-12 flex items-center gap-2 print:hidden z-10">
         {isAdmin && (
           <Button
@@ -449,18 +449,18 @@ export function FichaJugadorModal({
         <Button
           variant="outline"
           size="sm"
-          icon={<Trash2 className="w-4 h-4 text-red-400" />}
+          icon={<Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />}
           onClick={() => setShowConfirmDelete(true)}
-          className="border-red-500/30 bg-slate-900 text-red-400 hover:bg-red-500/10"
+          className="border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-slate-900 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10"
         >
           Eliminar
         </Button>
         <Button
           variant="outline"
           size="sm"
-          icon={<Sparkles className="w-4 h-4 text-amber-400" />}
+          icon={<Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
           onClick={handleToggleInformeIA}
-          className="border-amber-500/40 bg-slate-900 text-amber-300 hover:bg-amber-500/10 shadow-sm"
+          className="border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-slate-900 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/10 shadow-xs"
         >
           {showInformeIA ? 'Ocultar Informe IA' : '✨ Informe IA'}
         </Button>
@@ -475,12 +475,12 @@ export function FichaJugadorModal({
         </Button>
       </div>
 
-      <div className="print-area flex flex-col bg-slate-950 text-slate-200 p-2 sm:p-6 print:p-0 print:bg-slate-950 w-full min-h-screen sm:min-h-0 print:min-h-screen">
+      <div className="print-area flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 p-2 sm:p-6 print:p-0 print:bg-white print:text-black w-full min-h-screen sm:min-h-0 print:min-h-screen transition-colors">
         
-        {/* === HEADER ZONE === */}
-        <div className="flex flex-col md:flex-row border-b border-slate-800 print:border-slate-800 pb-4 md:pb-6 gap-6 md:gap-8 mb-4">
+        {/* === HEADER ZONE (PASAPORTE TÁCTICO) === */}
+        <div className="flex flex-col md:flex-row bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 md:p-6 gap-6 md:gap-8 mb-5 shadow-xs transition-colors">
           {/* Foto */}
-          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-slate-900 rounded border border-slate-700 overflow-hidden flex items-center justify-center text-4xl font-black text-slate-700 mx-auto md:mx-0 shadow-lg">
+          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden flex items-center justify-center text-4xl font-black text-slate-400 dark:text-slate-700 mx-auto md:mx-0 shadow-sm">
             {isUploadingPhoto ? (
               <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
             ) : jugador.foto_url && !imgError ? (
@@ -507,45 +507,45 @@ export function FichaJugadorModal({
 
           {/* Info Principal */}
           <div className="flex-1 flex flex-col justify-center">
-            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white print:text-white leading-none mb-2 text-center md:text-left">
+            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white print:text-black leading-none mb-2 text-center md:text-left">
               {jugador.nombre} {jugador.apellidos}
             </h1>
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
               {jugador.club?.escudo_url ? (
                 <img src={jugador.club.escudo_url} alt="Escudo" className="w-8 h-8 object-contain" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold">CLUB</div>
+                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px] font-bold">CLUB</div>
               )}
               <div>
-                <p className="text-sm md:text-base font-bold text-emerald-400 leading-tight">{jugador.club?.nombre ?? 'Agente Libre'}</p>
-                <p className="text-xs text-slate-400 leading-tight">{jugador.categoria ?? 'Sin categoría'}</p>
+                <p className="text-sm md:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">{jugador.club?.nombre ?? 'Agente Libre'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight font-medium">{jugador.categoria ?? 'Sin categoría'}</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 border-t border-slate-800 pt-4 text-center md:text-left mt-2 md:mt-4">
+            <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 border-t border-slate-200 dark:border-slate-800 pt-4 text-center md:text-left mt-2 md:mt-4">
               <div className="flex-1 min-w-[100px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">F. Nacimiento</p>
-                <p className="text-xs font-semibold">{jugador.fecha_nacimiento ? formatearFecha(jugador.fecha_nacimiento) : 'N/D'} <span className="text-[10px] text-slate-400 font-normal">({edad} AÑOS)</span></p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">F. Nacimiento</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.fecha_nacimiento ? formatearFecha(jugador.fecha_nacimiento) : 'N/D'} <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">({edad} AÑOS)</span></p>
               </div>
               <div className="flex-1 min-w-[80px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Nacionalidad</p>
-                <p className="text-xs font-semibold">{jugador.nacionalidad}</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Nacionalidad</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.nacionalidad}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Altura</p>
-                <p className="text-xs font-semibold">{jugador.altura_cm ? `${jugador.altura_cm} cm` : 'N/D'}</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Altura</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.altura_cm ? `${jugador.altura_cm} cm` : 'N/D'}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Pie</p>
-                <p className="text-xs font-semibold">{PIE_LABELS[jugador.pie_preferido]}</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Pie</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{PIE_LABELS[jugador.pie_preferido]}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Posición</p>
-                <p className="text-xs font-semibold">{jugador.posicion}</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Posición</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.posicion}</p>
               </div>
               <div className="flex-1 min-w-[60px]">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Dorsal</p>
-                <p className="text-xs font-semibold">{jugador.dorsal ?? '-'}</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-0.5">Dorsal</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{jugador.dorsal ?? '-'}</p>
               </div>
             </div>
           </div>
@@ -555,47 +555,47 @@ export function FichaJugadorModal({
             {(() => {
               const pitchPos = getPitchPosition(jugador.posicion, jugador.posicion_detallada)
               return (
-                <svg viewBox="0 0 100 140" className="w-full h-full border-2 border-slate-700 bg-slate-900 rounded shadow-md">
+                <svg viewBox="0 0 100 140" className="w-full h-full border-2 border-slate-300 dark:border-slate-700 bg-emerald-900/10 dark:bg-slate-900 rounded-xl shadow-xs">
                   <rect x="0" y="0" width="100" height="140" fill="none" />
-                  <line x1="0" y1="70" x2="100" y2="70" stroke="#334155" strokeWidth="1" />
-                  <circle cx="50" cy="70" r="15" fill="none" stroke="#334155" strokeWidth="1" />
-                  <rect x="25" y="0" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
-                  <rect x="25" y="120" width="50" height="20" fill="none" stroke="#334155" strokeWidth="1" />
-                  <rect x="40" y="0" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
-                  <rect x="40" y="132" width="20" height="8" fill="none" stroke="#334155" strokeWidth="1" />
+                  <line x1="0" y1="70" x2="100" y2="70" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
+                  <circle cx="50" cy="70" r="15" fill="none" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
+                  <rect x="25" y="0" width="50" height="20" fill="none" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
+                  <rect x="25" y="120" width="50" height="20" fill="none" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
+                  <rect x="40" y="0" width="20" height="8" fill="none" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
+                  <rect x="40" y="132" width="20" height="8" fill="none" stroke="#10b981" strokeOpacity="0.3" strokeWidth="1" />
                   
                   {/* Posición principal dinámica (punto verde) */}
-                  <circle cx={pitchPos.x} cy={pitchPos.y} r="7" fill="#10b981" />
+                  <circle cx={pitchPos.x} cy={pitchPos.y} r="7" fill="#059669" />
                   <text x={pitchPos.x} y={pitchPos.y + 2.5} fill="white" fontSize="5.5" fontWeight="bold" textAnchor="middle">{jugador.posicion}</text>
                 </svg>
               )
             })()}
-            <p className="text-[9px] text-emerald-400 font-bold uppercase mt-2 text-center">
+            <p className="text-[9px] text-emerald-700 dark:text-emerald-400 font-bold uppercase mt-2 text-center">
               {(jugador.posicion_detallada && POSICION_DETALLADA_LABELS[jugador.posicion_detallada]) || POSICION_LABELS[jugador.posicion] || 'PRINCIPAL'}
             </p>
           </div>
         </div>
 
         {/* === SECONDARY BAR === */}
-        <div className="flex flex-wrap md:flex-nowrap items-center bg-slate-900 border border-slate-800 rounded-lg p-4 gap-6 mb-6">
+        <div className="flex flex-wrap md:flex-nowrap items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 gap-6 mb-6 shadow-xs">
           <div className="flex-1 min-w-[120px]">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Valor de Mercado</p>
-            <p className="text-xl font-bold text-emerald-400">{jugador.valor_mercado || 'N/D'}</p>
+            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">{jugador.valor_mercado || 'N/D'}</p>
           </div>
-          <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6">
+          <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Fin de Contrato</p>
-            <p className="text-sm font-semibold">{jugador.fin_contrato || 'N/D'}</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{jugador.fin_contrato || 'N/D'}</p>
           </div>
-          <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6">
+          <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6">
             <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Estilo de Juego</p>
-            <p className="text-sm font-semibold truncate" title={jugador.estilo_juego || 'Sin definir'}>{jugador.estilo_juego || 'Sin definir'}</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={jugador.estilo_juego || 'Sin definir'}>{jugador.estilo_juego || 'Sin definir'}</p>
           </div>
-          <div className="flex-1 min-w-[120px] border-l border-slate-800 pl-6 flex items-center justify-between">
+          <div className="flex-1 min-w-[120px] border-l border-slate-200 dark:border-slate-800 pl-6 flex items-center justify-between">
             <div>
               <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">Score ({activeModelName})</p>
               <div className="flex items-center gap-2">
                 <div className={`w-4 h-4 rounded-sm ${scoreActual && scoreActual >= 70 ? 'bg-emerald-500' : scoreActual && scoreActual >= 50 ? 'bg-amber-500' : 'bg-red-500'} print:color-adjust-exact`} style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
-                <span className="text-xl font-bold">{scoreActual ? scoreActual.toFixed(2) : 'N/D'}</span>
+                <span className="text-xl font-bold text-slate-900 dark:text-slate-100">{scoreActual ? scoreActual.toFixed(2) : 'N/D'}</span>
               </div>
             </div>
           </div>
@@ -603,15 +603,15 @@ export function FichaJugadorModal({
 
         {/* === DOSSIER DE SCOUTING IA === */}
         {showInformeIA && informeIA && (
-          <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 border border-amber-500/40 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
+          <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-amber-50/60 via-white to-amber-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/20 border border-amber-300 dark:border-amber-500/40 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-amber-200 dark:border-slate-800 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-400">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-100 text-sm">{informeIA.titulo}</h4>
-                  <p className="text-[11px] text-slate-400">Generado con IA para el modelo <span className="text-emerald-400 font-semibold">{activeModelName}</span></p>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{informeIA.titulo}</h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Generado con IA para el modelo <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{activeModelName}</span></p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -622,9 +622,9 @@ export function FichaJugadorModal({
                   variant="outline"
                   size="sm"
                   onClick={handleCopiarInforme}
-                  className="text-xs h-8 bg-slate-950 border-slate-700 text-slate-300"
+                  className="text-xs h-8 bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-xs"
                 >
-                  {copiadoIA ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                  {copiadoIA ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
                   {copiadoIA ? '¡Copiado!' : 'Copiar Informe'}
                 </Button>
               </div>
@@ -632,44 +632,44 @@ export function FichaJugadorModal({
 
             <div className="space-y-4 text-xs">
               <div>
-                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Radiografía y Perfil Futbolístico</h5>
-                <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">{informeIA.radiografia}</p>
+                <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Radiografía y Perfil Futbolístico</h5>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-xs">{informeIA.radiografia}</p>
               </div>
               <div>
-                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Idoneidad Táctica en el Modelo ({activeModelName})</h5>
-                <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">{informeIA.encajeTactico}</p>
+                <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Idoneidad Táctica en el Modelo ({activeModelName})</h5>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-xs">{informeIA.encajeTactico}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20">
-                  <h6 className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-500/20">
+                  <h6 className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Puntos Fuertes
                   </h6>
-                  <ul className="space-y-1 text-slate-300">
+                  <ul className="space-y-1 text-slate-700 dark:text-slate-300">
                     {informeIA.prosContras.pros.map(p => (
                       <li key={p} className="flex items-start gap-1.5 text-[11px]">
-                        <span className="text-emerald-400">•</span> {p}
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">•</span> {p}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20">
-                  <h6 className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/20">
+                  <h6 className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                     <AlertTriangle className="w-3.5 h-3.5" /> Aspectos a Vigilar
                   </h6>
-                  <ul className="space-y-1 text-slate-300">
+                  <ul className="space-y-1 text-slate-700 dark:text-slate-300">
                     {informeIA.prosContras.contras.map(c => (
                       <li key={c} className="flex items-start gap-1.5 text-[11px]">
-                        <span className="text-amber-400">•</span> {c}
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">•</span> {c}
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-2.5">
-                <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-start gap-2.5 shadow-xs">
+                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-slate-200 block mb-0.5">Dictamen de Dirección Deportiva:</span>
-                  <p className="text-slate-300 leading-relaxed">{informeIA.justificacionFinal}</p>
+                  <span className="font-bold text-slate-900 dark:text-slate-200 block mb-0.5">Dictamen de Dirección Deportiva:</span>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{informeIA.justificacionFinal}</p>
                 </div>
               </div>
             </div>
@@ -680,14 +680,14 @@ export function FichaJugadorModal({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 flex-1">
           
           {/* COL 1: Radar */}
-          <div className="flex flex-col bg-slate-900 border border-slate-800 rounded-lg p-4 relative min-w-0 overflow-hidden">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0">Atributos (0-100)</h3>
+          <div className="flex flex-col bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 relative min-w-0 overflow-hidden shadow-xs">
+            <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0">Atributos (0-100)</h3>
             <div className="w-full flex-1 relative min-h-[220px] mt-2">
               <div className="absolute inset-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="62%" data={radarData}>
-                    <PolarGrid stroke="#334155" strokeDasharray="3 3" />
-                    <PolarAngleAxis dataKey="name" stroke="#94a3b8" fontSize={9} fontWeight="bold" tickLine={false} />
+                    <PolarGrid stroke="#cbd5e1" strokeDasharray="3 3" />
+                    <PolarAngleAxis dataKey="name" stroke="#475569" fontSize={9} fontWeight="bold" tickLine={false} />
                     <PolarRadiusAxis 
                       type="number"
                       domain={[0, 100]} 
@@ -701,9 +701,9 @@ export function FichaJugadorModal({
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="bg-slate-900/95 border border-slate-700 px-3 py-1.5 rounded-lg shadow-xl text-xs backdrop-blur-sm">
-                              <p className="font-bold text-slate-200">{data.name}</p>
-                              <p className="text-emerald-400 font-bold text-sm">{data.percentil} <span className="text-[10px] text-slate-400 font-normal">/ 100</span></p>
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-md text-xs">
+                              <p className="font-bold text-slate-800 dark:text-slate-200">{data.name}</p>
+                              <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{data.percentil} <span className="text-[10px] text-slate-400 font-normal">/ 100</span></p>
                             </div>
                           )
                         }
@@ -713,7 +713,7 @@ export function FichaJugadorModal({
                     <Radar
                       name="Jugador"
                       dataKey="percentil"
-                      stroke="#10b981"
+                      stroke="#059669"
                       strokeWidth={2}
                       fill="#10b981"
                       fillOpacity={0.35}
@@ -725,58 +725,62 @@ export function FichaJugadorModal({
           </div>
 
           {/* COL 2: Season Stats */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 print:border-slate-300">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Temporada 2026</h3>
-            <div className="grid grid-cols-5 gap-4 text-center mb-8">
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">PJ</p>
-                <p className="text-2xl font-black">{jugador.est_partidos ?? jugador.partidos_analizados}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Min</p>
-                <p className="text-2xl font-black">{jugador.est_minutos ?? jugador.minutos_jugados}'</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Goles</p>
-                <p className="text-2xl font-black">{jugador.est_goles ?? 0}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Asist</p>
-                <p className="text-2xl font-black">{jugador.est_asistencias ?? 0}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">Tarjetas</p>
-                <p className="text-2xl font-black text-amber-500">{jugador.est_amarillas ?? 0} <span className="text-slate-600">/</span> <span className="text-red-500">{jugador.est_rojas ?? 0}</span></p>
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs print:border-slate-300 flex flex-col justify-between">
+            <div>
+              <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Temporada 2026</h3>
+              <div className="grid grid-cols-5 gap-2 text-center mb-6">
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">PJ</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_partidos ?? jugador.partidos_analizados}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Min</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_minutos ?? jugador.minutos_jugados}'</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Goles</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_goles ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Asist</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{jugador.est_asistencias ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Tarjetas</p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-600">{jugador.est_amarillas ?? 0} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{jugador.est_rojas ?? 0}</span></p>
+                </div>
               </div>
             </div>
 
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4 mt-2">Score por métricas clave (Efectividad)</h3>
-            <div className="flex-1 flex items-end justify-between gap-1 h-32 mt-auto pb-2">
-              {estadisticasN2.slice(0, 6).map((stat, i) => (
-                <div key={i} className="flex flex-col items-center flex-1 h-full justify-end group">
-                  <span className="text-[9px] text-slate-300 font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{stat.porcentajeEfectividad}%</span>
-                  <div className="w-full bg-slate-800 rounded-t-sm relative flex items-end max-w-[24px]">
-                    <div 
-                      className={`w-full rounded-t-sm print:color-adjust-exact ${stat.porcentajeEfectividad > 60 ? 'bg-emerald-500' : 'bg-amber-500'}`} 
-                      style={{ height: `${stat.porcentajeEfectividad}%`, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
-                    />
+            <div>
+              <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Score por métricas clave (Efectividad)</h3>
+              <div className="flex items-end justify-between gap-1 h-28 pb-1">
+                {estadisticasN2.slice(0, 6).map((stat, i) => (
+                  <div key={i} className="flex flex-col items-center flex-1 h-full justify-end group">
+                    <span className="text-[9px] text-slate-700 dark:text-slate-300 font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{stat.porcentajeEfectividad}%</span>
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-t-sm relative flex items-end max-w-[24px]">
+                      <div 
+                        className={`w-full rounded-t-sm print:color-adjust-exact ${stat.porcentajeEfectividad > 60 ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-amber-500'}`} 
+                        style={{ height: `${stat.porcentajeEfectividad}%`, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                      />
+                    </div>
+                    <span className="text-[8px] text-slate-500 uppercase mt-2 truncate w-full text-center font-bold" title={stat.nombreMetrica}>
+                      {stat.nombreMetrica.substring(0,3)}
+                    </span>
                   </div>
-                  <span className="text-[8px] text-slate-500 uppercase mt-2 truncate w-full text-center" title={stat.nombreMetrica}>
-                    {stat.nombreMetrica.substring(0,3)}
-                  </span>
-                </div>
-              ))}
-              {estadisticasN2.length === 0 && <p className="text-xs text-slate-500 w-full text-center">Sin datos de métricas</p>}
+                ))}
+                {estadisticasN2.length === 0 && <p className="text-xs text-slate-500 w-full text-center py-4">Sin datos de métricas</p>}
+              </div>
             </div>
           </div>
 
           {/* COL 3: Career Summary */}
-          <div className="flex flex-col bg-slate-900 border border-slate-800 rounded-lg p-4">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Resumen de Carrera</h3>
+          <div className="flex flex-col bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
+            <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Resumen de Carrera</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800 text-[9px] text-slate-500 uppercase">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-[9px] text-slate-500 uppercase">
                     <th className="pb-2 font-bold">Temp</th>
                     <th className="pb-2 font-bold">Equipo</th>
                     <th className="pb-2 font-bold text-center">PJ</th>
@@ -785,15 +789,18 @@ export function FichaJugadorModal({
                     <th className="pb-2 font-bold text-center">Score</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/50">
                   {historial.length > 0 ? (
                     historial.map((h, i) => (
-                      <tr key={i} className="hover:bg-slate-800/50">
-                        <td className="py-2 font-bold">{h.temporada}</td>
-                        <td className="py-2 flex items-center gap-1"><div className="w-3 h-3 bg-slate-700 rounded-sm"></div> {h.equipo}</td>
-                        <td className="py-2 text-center">{h.partidos}</td>
-                        <td className="py-2 text-center">{h.goles}</td>
-                        <td className="py-2 text-center">{h.asistencias}</td>
+                      <tr key={i} className="hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <td className="py-2 font-bold text-slate-800 dark:text-slate-200">{h.temporada}</td>
+                        <td className="py-2 flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                          <div className="w-3.5 h-3.5 bg-emerald-100 dark:bg-slate-700 rounded-xs flex items-center justify-center text-[8px] font-bold text-emerald-800">C</div>
+                          {h.equipo}
+                        </td>
+                        <td className="py-2 text-center text-slate-700 dark:text-slate-300">{h.partidos}</td>
+                        <td className="py-2 text-center text-slate-700 dark:text-slate-300">{h.goles}</td>
+                        <td className="py-2 text-center text-slate-700 dark:text-slate-300">{h.asistencias}</td>
                         <td className="py-2 text-center">
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white print:color-adjust-exact ${h.score >= 70 ? 'bg-emerald-600' : 'bg-amber-600'}`} style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
                             {h.score.toFixed(2)}
@@ -814,13 +821,13 @@ export function FichaJugadorModal({
 
         {/* === BOTTOM 3 COLUMNS === */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
-            <h3 className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mb-3">Puntos Fuertes</h3>
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
+            <h3 className="text-[10px] font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-wider mb-3">Puntos Fuertes</h3>
             {puntosFuertes.length > 0 ? (
               <ul className="space-y-2">
                 {puntosFuertes.slice(0, 5).map((p, i) => (
-                  <li key={i} className="flex gap-2 text-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                  <li key={i} className="flex gap-2 text-xs text-slate-700 dark:text-slate-300">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
                     <span>{p}</span>
                   </li>
                 ))}
@@ -829,13 +836,13 @@ export function FichaJugadorModal({
               <p className="text-xs text-slate-500">Sin definir</p>
             )}
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
-            <h3 className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-3">Aspectos a Mejorar</h3>
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
+            <h3 className="text-[10px] font-bold text-red-700 dark:text-red-500 uppercase tracking-wider mb-3">Aspectos a Mejorar</h3>
             {puntosDebiles.length > 0 ? (
               <ul className="space-y-2">
                 {puntosDebiles.slice(0, 5).map((p, i) => (
-                  <li key={i} className="flex gap-2 text-xs">
-                    <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                  <li key={i} className="flex gap-2 text-xs text-slate-700 dark:text-slate-300">
+                    <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-500 shrink-0 mt-0.5" />
                     <span>{p}</span>
                   </li>
                 ))}
@@ -844,23 +851,23 @@ export function FichaJugadorModal({
               <p className="text-xs text-slate-500">Sin definir</p>
             )}
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Perfil del Jugador</h3>
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col shadow-xs">
+            <h3 className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">Perfil del Jugador</h3>
             <div className="space-y-3 text-xs flex-1">
               <div className="flex gap-2 items-start">
-                <span className="w-4 mt-0.5 text-slate-500"><ThumbsUp className="w-3.5 h-3.5" /></span>
-                <span className="font-semibold text-slate-300 w-16">Potencial:</span>
-                <span className="font-bold text-white flex-1">{edad !== null && edad < 23 && scoreActual && scoreActual > 65 ? 'Alto' : 'Estándar'}</span>
+                <span className="w-4 mt-0.5 text-slate-400"><ThumbsUp className="w-3.5 h-3.5" /></span>
+                <span className="font-bold text-slate-600 dark:text-slate-300 w-16">Potencial:</span>
+                <span className="font-bold text-slate-900 dark:text-white flex-1">{edad !== null && edad < 23 && scoreActual && scoreActual > 65 ? 'Alto' : 'Estándar'}</span>
               </div>
               <div className="flex gap-2 items-start">
-                <span className="w-4 mt-0.5 text-slate-500"><ThumbsUp className="w-3.5 h-3.5" /></span>
-                <span className="font-semibold text-slate-300 w-16">Carácter:</span>
-                <span className="flex-1">{caracter}</span>
+                <span className="w-4 mt-0.5 text-slate-400"><ThumbsUp className="w-3.5 h-3.5" /></span>
+                <span className="font-bold text-slate-600 dark:text-slate-300 w-16">Carácter:</span>
+                <span className="text-slate-700 dark:text-slate-300 flex-1">{caracter}</span>
               </div>
               <div className="flex gap-2 items-start">
-                <span className="w-4 mt-0.5 text-slate-500"><ThumbsUp className="w-3.5 h-3.5" /></span>
-                <span className="font-semibold text-slate-300 w-16">Estilo:</span>
-                <span className="flex-1">Jugador adaptado al modelo de juego con énfasis en {metricas[0]?.nombre.toLowerCase() || 'acciones ofensivas'}.</span>
+                <span className="w-4 mt-0.5 text-slate-400"><ThumbsUp className="w-3.5 h-3.5" /></span>
+                <span className="font-bold text-slate-600 dark:text-slate-300 w-16">Estilo:</span>
+                <span className="text-slate-700 dark:text-slate-300 flex-1">Jugador adaptado al modelo de juego con énfasis en {metricas[0]?.nombre.toLowerCase() || 'acciones ofensivas'}.</span>
               </div>
             </div>
           </div>
@@ -878,17 +885,17 @@ export function FichaJugadorModal({
       <div className="mt-6 print:hidden">
         <button 
           onClick={() => setClipsExpanded(!clipsExpanded)}
-          className="w-full flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors group"
+          className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl transition-colors group shadow-xs"
         >
           <div className="flex items-center gap-2">
-            <Video className="w-4 h-4 text-emerald-400" />
-            <span className="font-bold text-sm text-slate-200">Vídeos y Acciones Etiquetadas ({acciones.length})</span>
+            <Video className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-bold text-sm text-slate-800 dark:text-slate-200">Vídeos y Acciones Etiquetadas ({acciones.length})</span>
           </div>
-          {clipsExpanded ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+          {clipsExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
         </button>
 
         {clipsExpanded && (
-          <div className="mt-2 p-4 bg-slate-900/50 border border-slate-800 rounded-lg max-h-[400px] overflow-y-auto space-y-2">
+          <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl max-h-[400px] overflow-y-auto space-y-2">
             {acciones.length > 0 ? (
               acciones.map((acc) => (
                 <div
@@ -899,16 +906,16 @@ export function FichaJugadorModal({
                       setSelectedAccionToPlay(acc)
                     }
                   }}
-                  className={`p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors ${acc.video?.url ? 'bg-slate-950/80 border-slate-800 cursor-pointer hover:bg-slate-800 hover:border-slate-700' : 'bg-slate-950/50 border-slate-900 opacity-70'}`}
+                  className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors ${acc.video?.url ? 'bg-white dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 shadow-xs' : 'bg-slate-100 dark:bg-slate-950/50 border-slate-200 dark:border-slate-900 opacity-70'}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-10 rounded border border-slate-800 bg-slate-900 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[10px] font-mono font-bold text-slate-300">
+                    <div className="w-12 h-10 rounded-lg border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
                         {String(acc.minuto_video).padStart(2, '0')}:{String(acc.segundo_video).padStart(2, '0')}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold truncate text-slate-200">
+                      <p className="text-xs font-bold truncate text-slate-800 dark:text-slate-200">
                         {acc.metrica_n2?.nombre ?? acc.metrica_n1?.nombre ?? 'Acción'}
                       </p>
                       {acc.zona && (
@@ -920,7 +927,7 @@ export function FichaJugadorModal({
                   </div>
                   <div className="flex items-center gap-3">
                     {acc.clip_url && (
-                      <div className="w-6 h-6 rounded flex items-center justify-center bg-indigo-500/20 text-indigo-400">
+                      <div className="w-6 h-6 rounded flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-transparent">
                         <Video className="w-3 h-3" />
                       </div>
                     )}
