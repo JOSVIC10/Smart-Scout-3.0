@@ -408,7 +408,7 @@ export async function POST(request: Request) {
 
       const syncPlayers = async (players: JugadorActa[], clubId?: string, teamLabel?: string) => {
         for (const p of players) {
-          if (p.minutosJugados === 0 && p.goles === 0 && p.amarillas === 0) continue
+          if (p.minutosJugados === 0 && p.goles === 0 && p.amarillas === 0 && p.rojas === 0) continue
 
           let match = buscarEnBd(p.nombre, clubId)
           if (!match && p.dorsal && clubId) {
@@ -418,6 +418,7 @@ export async function POST(request: Request) {
           if (match) {
             const prevPJ = match.est_partidos ?? match.partidos_analizados ?? 0
             const prevMin = match.est_minutos ?? match.minutos_jugados ?? 0
+            // We accumulate goals in est_goles for now since the schema doesn't have a separate field
             const prevGoles = match.est_goles ?? 0
             const prevAsist = match.est_asistencias ?? 0
             const prevAmarillas = match.est_amarillas ?? 0
@@ -439,8 +440,8 @@ export async function POST(request: Request) {
                 est_asistencias: nuevoAsist,
                 est_amarillas: nuevoAmarillas,
                 est_rojas: nuevoRojas,
-                partidos_analizados: nuevoPJ,
-                minutos_jugados: nuevoMin
+                partidos_analizados: (match.partidos_analizados ?? 0) + 1,
+                minutos_jugados: (match.minutos_jugados ?? 0) + p.minutosJugados
               })
               .eq('id', match.id)
 
@@ -456,6 +457,51 @@ export async function POST(request: Request) {
               estPartidosNuevo: nuevoPJ,
               estMinutosNuevo: nuevoMin
             })
+          } else {
+            // CREAR NUEVO JUGADOR OBSERVADO
+            const nameParts = p.nombre.split(' ')
+            const apellidos = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''
+            const nombre = nameParts[0]
+
+            const nuevoJugador = {
+              nombre,
+              apellidos,
+              nacionalidad: 'España',
+              pie_preferido: 'derecho',
+              posicion: 'MC', // Posición por defecto
+              club_id: clubId || null,
+              dorsal: p.dorsal || null,
+              est_partidos: 1,
+              est_minutos: p.minutosJugados,
+              est_goles: p.goles,
+              est_asistencias: p.asistencias,
+              est_amarillas: p.amarillas,
+              est_rojas: p.rojas,
+              partidos_analizados: 1,
+              minutos_jugados: p.minutosJugados,
+              categoria: 'Tercera RFEF'
+            }
+
+            const { data: inserted } = await supabase
+              .from('jugadores')
+              .insert(nuevoJugador)
+              .select()
+              .single()
+              
+            if (inserted) {
+              jugadoresActualizados.push({
+                id: inserted.id,
+                nombre: `${inserted.nombre} ${inserted.apellidos || ''}`.trim(),
+                equipo: teamLabel || p.equipoNombre,
+                minutosSumados: p.minutosJugados,
+                golesSumados: p.goles,
+                amarillasSumadas: p.amarillas,
+                rojasSumadas: p.rojas,
+                esTitular: p.esTitular,
+                estPartidosNuevo: 1,
+                estMinutosNuevo: p.minutosJugados
+              })
+            }
           }
         }
       }
