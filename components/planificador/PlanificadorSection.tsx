@@ -89,7 +89,9 @@ export function PlanificadorSection({ activeModelName, activeModelId, refreshKey
   const seniorValido = seniorCount <= 16
   const contratos2026 = miPlantilla.filter(j => j.fin_contrato && j.fin_contrato.includes('2026')).length
 
-  const clubOptions = clubes.map(c => ({ value: c.id, label: c.nombre }))
+  const clubOptions = clubes
+    .filter(c => c.nombre.toLowerCase().includes('grama')) // Restringido por el rol de Director Deportivo
+    .map(c => ({ value: c.id, label: c.nombre }))
 
   const getAlertas = (jugador: JugadorConClub) => {
     const alertas = []

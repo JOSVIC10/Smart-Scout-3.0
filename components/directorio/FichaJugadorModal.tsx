@@ -334,7 +334,7 @@ export function FichaJugadorModal({
 
   const j = jugadorActual ?? jugador
 
-  const { radarData, goles, asistencias, tarjetasAmarillas, tarjetasRojas, pctEfectividad, historial } = useMemo(() => {
+  const { radarData, golesActual, asistActual, amarillasActual, rojasActual, pctEfectividad, historial } = useMemo(() => {
     if (!j) return { radarData: [], goles: 0, asistencias: 0, tarjetasAmarillas: 0, tarjetasRojas: 0, pctEfectividad: 0, historial: [] }
 
     // Calcula goles y asistencias
@@ -403,8 +403,10 @@ export function FichaJugadorModal({
     // Partidos de la temporada actual (2026-2027) — vienen del campo partidos_analizados
     // que se incrementa con cada jornada sincronizada
     const pjActual = j.partidos_analizados ?? 0
-    const golesActual = goles
-    const asistActual = asistencias
+    const golesActual = golesAcc
+    const asistActual = asistenciasAcc
+    const amarillasActual = tarjetasAmarillasAcc
+    const rojasActual = tarjetasRojasAcc
 
     const historial: { temporada: string; equipo: string; partidos: number; goles: number; asistencias: number; score: number }[] = []
     // Temporada actual
@@ -428,7 +430,7 @@ export function FichaJugadorModal({
       })
     }
 
-    return { radarData, goles, asistencias, tarjetasAmarillas, tarjetasRojas, pctEfectividad, historial }
+    return { radarData, golesActual, asistActual, amarillasActual, rojasActual, pctEfectividad, historial }
   }, [metricas, acciones, j, scoreActual, desglose])
 
   const puntosFuertes = useMemo(() => Array.from(new Set(valoraciones.flatMap(v => v.aspectos_positivos || []))), [valoraciones])
@@ -800,15 +802,15 @@ export function FichaJugadorModal({
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Goles</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{goles}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{golesActual}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Asist</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{asistencias}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{asistActual}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Tarjetas</p>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">{tarjetasAmarillas} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{tarjetasRojas}</span></p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-600">{amarillasActual} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{rojasActual}</span></p>
                 </div>
               </div>
             </div>
