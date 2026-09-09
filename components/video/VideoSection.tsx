@@ -5,8 +5,10 @@ import { CustomVideoPlayer } from './CustomVideoPlayer'
 import { MetricasN2Botonera } from './MetricasN2Botonera'
 import { PitchMap } from './PitchMap'
 import { VideoUploadModal } from './VideoUploadModal'
-import { VideoAnalyticsSection } from './VideoAnalyticsSection'
+import { VideoAnalyticsSection, type YoloLayerOptions } from './VideoAnalyticsSection'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { useYoloMock } from './useYoloMock'
+import { YoloOverlay } from './YoloOverlay'
 import {
   Video,
   Play,
@@ -106,6 +108,17 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
   // ——— UI state ———
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showKeyboardHints, setShowKeyboardHints] = useState(false)
+
+  // ——— YOLO state ———
+  const [isYoloActive, setIsYoloActive] = useState(false)
+  const [yoloLayerOptions, setYoloLayerOptions] = useState<YoloLayerOptions>({
+    showTracking: true,
+    showPasses: true,
+    showNames: true,
+  })
+  
+  // ——— YOLO Mock Data ———
+  const yoloData = useYoloMock(isYoloActive, playedSeconds)
 
   // ————————————————————————————————————————————
   // Initial load
@@ -429,14 +442,24 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
           <Card className="overflow-hidden bg-black border-slate-800">
             <div className="aspect-video relative bg-slate-950">
               {selectedVideo?.url ? (
-                <CustomVideoPlayer
-                  playerRef={playerRef}
-                  url={selectedVideo.url}
-                  onProgress={(state) => setPlayedSeconds(state.playedSeconds)}
-                  onDuration={setDuration}
-                  playing={isPlaying}
-                  onPlayPause={setIsPlaying}
-                />
+                <>
+                  <CustomVideoPlayer
+                    playerRef={playerRef}
+                    url={selectedVideo.url}
+                    onProgress={(state) => setPlayedSeconds(state.playedSeconds)}
+                    onDuration={setDuration}
+                    playing={isPlaying}
+                    onPlayPause={setIsPlaying}
+                  />
+                  {isYoloActive && (
+                    <YoloOverlay
+                      data={yoloData}
+                      showTracking={yoloLayerOptions.showTracking}
+                      showPasses={yoloLayerOptions.showPasses}
+                      showNames={yoloLayerOptions.showNames}
+                    />
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 space-y-3">
                   <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center">
@@ -651,7 +674,14 @@ export function VideoSection({ activeModelId, onScoreUpdated }: VideoSectionProp
           </Card>
 
           {/* ——— Telemetría del Partido ——— */}
-          <VideoAnalyticsSection partidoId={selectedVideo?.partido_id ?? null} />
+          <VideoAnalyticsSection 
+            partidoId={selectedVideo?.partido_id ?? null}
+            isActive={isYoloActive}
+            onToggleActive={() => setIsYoloActive(!isYoloActive)}
+            yoloData={yoloData}
+            layerOptions={yoloLayerOptions}
+            setLayerOptions={setYoloLayerOptions}
+          />
         </div>
 
         {/* ========================================================= */}

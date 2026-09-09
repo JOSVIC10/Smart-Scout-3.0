@@ -457,51 +457,6 @@ export async function POST(request: Request) {
               estPartidosNuevo: nuevoPJ,
               estMinutosNuevo: nuevoMin
             })
-          } else {
-            // CREAR NUEVO JUGADOR OBSERVADO
-            const nameParts = p.nombre.split(' ')
-            const apellidos = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''
-            const nombre = nameParts[0]
-
-            const nuevoJugador = {
-              nombre,
-              apellidos,
-              nacionalidad: 'España',
-              pie_preferido: 'derecho',
-              posicion: 'MC', // Posición por defecto
-              club_id: clubId || null,
-              dorsal: p.dorsal || null,
-              est_partidos: 1,
-              est_minutos: p.minutosJugados,
-              est_goles: p.goles,
-              est_asistencias: p.asistencias,
-              est_amarillas: p.amarillas,
-              est_rojas: p.rojas,
-              partidos_analizados: 1,
-              minutos_jugados: p.minutosJugados,
-              categoria: 'Tercera RFEF'
-            }
-
-            const { data: inserted } = await supabase
-              .from('jugadores')
-              .insert(nuevoJugador)
-              .select()
-              .single()
-              
-            if (inserted) {
-              jugadoresActualizados.push({
-                id: inserted.id,
-                nombre: `${inserted.nombre} ${inserted.apellidos || ''}`.trim(),
-                equipo: teamLabel || p.equipoNombre,
-                minutosSumados: p.minutosJugados,
-                golesSumados: p.goles,
-                amarillasSumadas: p.amarillas,
-                rojasSumadas: p.rojas,
-                esTitular: p.esTitular,
-                estPartidosNuevo: 1,
-                estMinutosNuevo: p.minutosJugados
-              })
-            }
           }
         }
       }

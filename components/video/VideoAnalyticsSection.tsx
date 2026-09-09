@@ -1,89 +1,127 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Activity, Upload, BarChart2, Terminal } from 'lucide-react'
-import { TrackingVisualizer } from './TrackingVisualizer'
+import { Activity, Power, Eye, EyeOff } from 'lucide-react'
+import { TacticalRadar } from './TacticalRadar'
+import { YoloStatsBar } from './YoloStatsBar'
+import { YoloData } from './useYoloMock'
 
-export function VideoAnalyticsSection({ partidoId }: { partidoId: string | null }) {
-  const [telemetry, setTelemetry] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+export interface YoloLayerOptions {
+  showTracking: boolean
+  showPasses: boolean
+  showNames: boolean
+}
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+interface VideoAnalyticsSectionProps {
+  partidoId: string | null
+  isActive: boolean
+  onToggleActive: () => void
+  yoloData: YoloData | null
+  layerOptions: YoloLayerOptions
+  setLayerOptions: React.Dispatch<React.SetStateAction<YoloLayerOptions>>
+}
 
-    setLoading(true)
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      try {
-        const json = JSON.parse(e.target?.result as string)
-        setTelemetry(json)
-        // Here we would ideally call a Supabase function to update `partidos` table
-        // For MVP, we just display it in UI
-      } catch (err) {
-        console.error('Failed to parse JSON', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    reader.readAsText(file)
+export function VideoAnalyticsSection({ 
+  isActive, 
+  onToggleActive, 
+  yoloData, 
+  layerOptions, 
+  setLayerOptions 
+}: VideoAnalyticsSectionProps) {
+
+  const toggleLayer = (key: keyof YoloLayerOptions) => {
+    setLayerOptions(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Allow telemetry testing even if the video is not linked to a partido yet
-  // if (!partidoId) {
-  //   return null
-  // }
-
   return (
-    <Card className="mt-4 border-slate-800 bg-slate-950">
-      <CardHeader className="border-b border-slate-800/50 pb-4">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Activity className="w-4 h-4 text-purple-400" />
-          Análisis Táctico Avanzado (YOLO)
-        </CardTitle>
+    <Card className="mt-4 border-slate-800 bg-slate-950 overflow-hidden">
+      <CardHeader className="border-b border-slate-800/50 pb-4 bg-slate-900/50">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Activity className="w-4 h-4 text-emerald-400" />
+            Análisis Táctico Avanzado (YOLO)
+          </CardTitle>
+          <Button
+            variant={isActive ? 'danger' : 'primary'}
+            size="sm"
+            onClick={onToggleActive}
+            icon={<Power className="w-3.5 h-3.5" />}
+            className={isActive ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/30' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(52,211,153,0.3)]'}
+          >
+            {isActive ? 'Detener Análisis' : 'Iniciar Análisis YOLO'}
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="pt-6">
-        {!telemetry ? (
-          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/30">
-            <Upload className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-4" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-200 mb-2">Subir Telemetría de Partido</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center max-w-lg">
-              El análisis de tracking 2D requiere procesar el video del partido de forma local usando nuestro pipeline de Inteligencia Artificial.
-            </p>
-            
-            <div className="bg-black/50 p-4 rounded-lg border border-slate-800 mb-8 w-full max-w-xl text-left shadow-inner">
-              <p className="text-[10px] text-slate-500 mb-2 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <Terminal className="w-3 h-3" /> Comando de Ejecución Local
-              </p>
-              <code className="text-xs text-emerald-400 font-mono break-all select-all block bg-slate-950 p-2 rounded border border-slate-800/60">
-                python process_video.py --video ./input.mp4 --output-dir ./output
-              </code>
+      
+      <CardContent className="pt-4 p-4 space-y-4">
+        {!isActive ? (
+          <div className="flex flex-col items-center justify-center py-10 px-4 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/30">
+            <div className="w-16 h-16 mb-4 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <Activity className="w-8 h-8 text-emerald-400" />
             </div>
-            
-            <input
-              type="file"
-              accept=".json"
-              id="telemetry-upload"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-            <label htmlFor="telemetry-upload">
-              <div className="inline-flex items-center justify-center rounded-lg bg-purple-600 hover:bg-purple-700 px-6 py-2.5 text-sm font-bold text-white transition-colors cursor-pointer shadow-lg shadow-purple-900/20">
-                Cargar telemetry.json
-              </div>
-            </label>
+            <h3 className="text-sm font-bold text-slate-200 mb-2 text-center">IA Táctica Inactiva</h3>
+            <p className="text-xs text-slate-500 text-center max-w-sm mb-6">
+              Activa el análisis YOLO para obtener tracking de jugadores, radar 2D y métricas avanzadas en tiempo real superpuestas en el vídeo.
+            </p>
+            <Button
+              variant="primary"
+              onClick={onToggleActive}
+              className="bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
+            >
+              Iniciar Análisis Táctico YOLO
+            </Button>
           </div>
         ) : (
-          <div className="space-y-6">
-            <TrackingVisualizer telemetry={telemetry} />
-            <div className="flex justify-end pt-2">
-              <Button variant="ghost" size="sm" onClick={() => setTelemetry(null)} className="text-slate-400 hover:text-slate-200">
-                Cerrar Visualizador
-              </Button>
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Layer Controls */}
+            <div className="grid grid-cols-3 gap-2">
+              <LayerButton 
+                active={layerOptions.showTracking} 
+                onClick={() => toggleLayer('showTracking')}
+                label="Tracking"
+              />
+              <LayerButton 
+                active={layerOptions.showPasses} 
+                onClick={() => toggleLayer('showPasses')}
+                label="Líneas de Pase"
+              />
+              <LayerButton 
+                active={layerOptions.showNames} 
+                onClick={() => toggleLayer('showNames')}
+                label="Dorsales"
+              />
+            </div>
+
+            {/* Radar & Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Radar Táctico</p>
+                <TacticalRadar data={yoloData} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Métricas en Vivo</p>
+                <YoloStatsBar data={yoloData} />
+              </div>
             </div>
           </div>
         )}
       </CardContent>
     </Card>
+  )
+}
+
+function LayerButton({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
+        active 
+          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[inset_0_0_10px_rgba(52,211,153,0.1)]' 
+          : 'bg-slate-900 text-slate-500 border-slate-800 hover:bg-slate-800'
+      }`}
+    >
+      {active ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+      {label}
+    </button>
   )
 }
