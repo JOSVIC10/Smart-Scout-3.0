@@ -50,7 +50,7 @@ export function DirectorioSection({
   const [isAddClubModalOpen, setIsAddClubModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
-  const miClub = clubes.find(c => c.nombre.toLowerCase().includes('grama')) ?? clubes[0]
+  const miClub = clubes.find(c => c.nombre.toLowerCase().includes('grama')) ?? null
 
   useEffect(() => {
     setBusqueda(globalSearch)

@@ -9,11 +9,19 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'cdn.resfu.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'ui-avatars.com',
       },
       {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mnfxjxorffxnuxpdzzzd.supabase.co',
       }
     ],
   },

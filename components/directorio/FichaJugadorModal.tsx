@@ -244,7 +244,8 @@ export function FichaJugadorModal({
         if (freshPlayerRes.data) {
           const freshData = freshPlayerRes.data as JugadorConClub
           setJugadorActual(freshData)
-          onPlayerUpdated?.(freshData)
+          // NOTE: Do NOT call onPlayerUpdated here — it re-sets selectedPlayer
+          // in the parent and causes the modal to reopen when trying to close.
         }
         setMetricas(mets)
         setValoraciones(vals)
@@ -393,15 +394,39 @@ export function FichaJugadorModal({
       }))
     }
 
-    const partidosTotales = j.est_partidos ?? j.partidos_analizados ?? 0
-    const historial = partidosTotales > 0 ? [{
+    // Los est_* contienen los datos históricos de la temporada 2025-2026
+    // La temporada 2026-2027 se va nutriendo jornada a jornada con el recálculo
+    const pjHistorico = j.est_partidos ?? j.partidos_analizados ?? 0
+    const golesHistorico = j.est_goles ?? 0
+    const asistHistorico = j.est_asistencias ?? 0
+
+    // Partidos de la temporada actual (2026-2027) — vienen del campo partidos_analizados
+    // que se incrementa con cada jornada sincronizada
+    const pjActual = j.partidos_analizados ?? 0
+    const golesActual = goles
+    const asistActual = asistencias
+
+    const historial: { temporada: string; equipo: string; partidos: number; goles: number; asistencias: number; score: number }[] = []
+    // Temporada actual
+    historial.push({
       temporada: obtenerTemporadaActual(),
       equipo: j.club?.nombre ?? 'Sin equipo',
-      partidos: partidosTotales,
-      goles,
-      asistencias,
+      partidos: pjActual,
+      goles: golesActual,
+      asistencias: asistActual,
       score: scoreActual ?? j.score_global ?? 0
-    }] : []
+    })
+    // Temporada anterior (2025-2026) — datos existentes pre-cargados
+    if (pjHistorico > 0) {
+      historial.push({
+        temporada: '2025-2026',
+        equipo: j.club?.nombre ?? 'Sin equipo',
+        partidos: pjHistorico,
+        goles: golesHistorico,
+        asistencias: asistHistorico,
+        score: j.score_global ?? 0
+      })
+    }
 
     return { radarData, goles, asistencias, tarjetasAmarillas, tarjetasRojas, pctEfectividad, historial }
   }, [metricas, acciones, j, scoreActual, desglose])
@@ -767,23 +792,23 @@ export function FichaJugadorModal({
               <div className="grid grid-cols-5 gap-2 text-center mb-6">
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">PJ</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_partidos ?? j.partidos_analizados ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.partidos_analizados ?? 0}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Min</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_minutos ?? j.minutos_jugados ?? 0}'</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.minutos_jugados ?? 0}'</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Goles</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_goles ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{goles}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Asist</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.est_asistencias ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{asistencias}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Tarjetas</p>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">{j.est_amarillas ?? 0} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{j.est_rojas ?? 0}</span></p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-600">{tarjetasAmarillas} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{tarjetasRojas}</span></p>
                 </div>
               </div>
             </div>
