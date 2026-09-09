@@ -532,9 +532,25 @@ export function FichaJugadorModal({
             </h1>
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
               {j.club?.escudo_url ? (
-                <img src={j.club.escudo_url} alt="Escudo" className="w-8 h-8 object-contain" />
+                <img
+                  src={j.club.escudo_url}
+                  alt={j.club.nombre || "Escudo"}
+                  className="w-8 h-8 object-contain shrink-0"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                    const parent = (e.currentTarget as HTMLElement).parentElement;
+                    if (parent && !parent.querySelector('.club-fallback')) {
+                      const fb = document.createElement('div');
+                      fb.className = 'club-fallback w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px] font-bold shrink-0';
+                      fb.textContent = (j.club?.nombre || 'C').substring(0, 2).toUpperCase();
+                      parent.prepend(fb);
+                    }
+                  }}
+                />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px] font-bold">CLUB</div>
+                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px] font-bold shrink-0">
+                  {(j.club?.nombre || 'C').substring(0, 2).toUpperCase()}
+                </div>
               )}
               <div>
                 <p className="text-sm md:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">{j.club?.nombre ?? 'Agente Libre'}</p>

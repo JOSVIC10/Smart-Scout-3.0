@@ -47,9 +47,19 @@ export function PlayerCard({ jugador, onClick }: PlayerCardProps) {
               <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400 transition-colors truncate">
                 {jugador.nombre} {jugador.apellidos}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
-                {jugador.club?.nombre ?? 'Sin equipo'}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                {jugador.club?.escudo_url && (
+                  <img
+                    src={jugador.club.escudo_url}
+                    alt=""
+                    className="w-3.5 h-3.5 object-contain shrink-0"
+                    onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none' }}
+                  />
+                )}
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate font-medium">
+                  {jugador.club?.nombre ?? 'Sin equipo'}
+                </p>
+              </div>
             </div>
           </div>
 

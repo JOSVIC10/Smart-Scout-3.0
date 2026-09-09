@@ -597,7 +597,12 @@ export function RecalcularJornadaModal({
                             {/* Teams and score */}
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               {partido.escudoLocal && (
-                                <img src={partido.escudoLocal} alt="" className="w-5 h-5 rounded-sm shrink-0" />
+                                <img
+                                  src={partido.escudoLocal}
+                                  alt=""
+                                  className="w-5 h-5 object-contain shrink-0 rounded-xs"
+                                  onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none' }}
+                                />
                               )}
                               <span className={`text-xs font-bold truncate ${
                                 isNuestroClub(partido.local) ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'
@@ -617,7 +622,12 @@ export function RecalcularJornadaModal({
                               </span>
 
                               {partido.escudoVisitante && (
-                                <img src={partido.escudoVisitante} alt="" className="w-5 h-5 rounded-sm shrink-0" />
+                                <img
+                                  src={partido.escudoVisitante}
+                                  alt=""
+                                  className="w-5 h-5 object-contain shrink-0 rounded-xs"
+                                  onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none' }}
+                                />
                               )}
                               <span className={`text-xs font-bold truncate ${
                                 isNuestroClub(partido.visitante) ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'
