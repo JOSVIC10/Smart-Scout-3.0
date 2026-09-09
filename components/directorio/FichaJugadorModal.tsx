@@ -403,12 +403,11 @@ export function FichaJugadorModal({
     // Partidos de la temporada actual (2026-2027) — vienen del campo partidos_analizados
     // que se incrementa con cada jornada sincronizada
     const pjActual = j.partidos_analizados ?? 0
-    // Usamos los campos est_* de la base de datos para acumular la temporada actual
-    // ya que no disponemos de un histórico separado en columnas para goles y asistencias.
-    const golesActual = goles
-    const asistActual = asistencias
-    const amarillasActual = tarjetasAmarillas
-    const rojasActual = tarjetasRojas
+    // Usamos los campos act_* de la base de datos para acumular la temporada actual
+    const golesActual = j.act_goles ?? 0
+    const asistActual = j.act_asistencias ?? 0
+    const amarillasActual = j.act_amarillas ?? 0
+    const rojasActual = j.act_rojas ?? 0
 
     const historial: { temporada: string; equipo: string; partidos: number; goles: number; asistencias: number; score: number }[] = []
     // Temporada actual

@@ -83,6 +83,10 @@ export interface Jugador {
   est_asistencias?: number | null
   est_amarillas?: number | null
   est_rojas?: number | null
+  act_goles?: number | null
+  act_asistencias?: number | null
+  act_amarillas?: number | null
+  act_rojas?: number | null
   created_at: string
   updated_at: string
 }

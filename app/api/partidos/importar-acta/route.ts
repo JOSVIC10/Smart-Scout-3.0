@@ -418,11 +418,11 @@ export async function POST(request: Request) {
           if (match) {
             const prevPJ = match.est_partidos ?? match.partidos_analizados ?? 0
             const prevMin = match.est_minutos ?? match.minutos_jugados ?? 0
-            // We accumulate goals in est_goles for now since the schema doesn't have a separate field
-            const prevGoles = match.est_goles ?? 0
-            const prevAsist = match.est_asistencias ?? 0
-            const prevAmarillas = match.est_amarillas ?? 0
-            const prevRojas = match.est_rojas ?? 0
+            // We accumulate goals in act_goles
+            const prevGoles = match.act_goles ?? 0
+            const prevAsist = match.act_asistencias ?? 0
+            const prevAmarillas = match.act_amarillas ?? 0
+            const prevRojas = match.act_rojas ?? 0
 
             const nuevoPJ = prevPJ + 1
             const nuevoMin = prevMin + p.minutosJugados
@@ -434,12 +434,10 @@ export async function POST(request: Request) {
             await supabase
               .from('jugadores')
               .update({
-                est_partidos: nuevoPJ,
-                est_minutos: nuevoMin,
-                est_goles: nuevoGoles,
-                est_asistencias: nuevoAsist,
-                est_amarillas: nuevoAmarillas,
-                est_rojas: nuevoRojas,
+                act_goles: nuevoGoles,
+                act_asistencias: nuevoAsist,
+                act_amarillas: nuevoAmarillas,
+                act_rojas: nuevoRojas,
                 partidos_analizados: (match.partidos_analizados ?? 0) + 1,
                 minutos_jugados: (match.minutos_jugados ?? 0) + p.minutosJugados
               })
