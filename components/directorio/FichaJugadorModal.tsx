@@ -215,6 +215,7 @@ export function FichaJugadorModal({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [clipsExpanded, setClipsExpanded] = useState(false)
+  const [temporadaVisualizada, setTemporadaVisualizada] = useState<string>(obtenerTemporadaActual())
 
   const initialSeekDone = useRef(false)
 
@@ -396,7 +397,7 @@ export function FichaJugadorModal({
 
     // Los est_* contienen los datos históricos de la temporada 2025-2026
     // La temporada 2026-2027 se va nutriendo jornada a jornada con el recálculo
-    const pjHistorico = j.est_partidos ?? j.partidos_analizados ?? 0
+    const pjHistorico = j.est_partidos ?? 0
     const golesHistorico = j.est_goles ?? 0
     const asistHistorico = j.est_asistencias ?? 0
 
@@ -420,7 +421,7 @@ export function FichaJugadorModal({
       score: scoreActual ?? j.score_global ?? 0
     })
     // Temporada anterior (2025-2026) — datos existentes pre-cargados
-    if (pjHistorico > 0) {
+    if (pjHistorico > 0 || golesHistorico > 0 || asistHistorico > 0 || j.est_minutos) {
       historial.push({
         temporada: '2025-2026',
         equipo: j.club?.nombre ?? 'Sin equipo',
@@ -437,6 +438,14 @@ export function FichaJugadorModal({
   const puntosFuertes = useMemo(() => Array.from(new Set(valoraciones.flatMap(v => v.aspectos_positivos || []))), [valoraciones])
   const puntosDebiles = useMemo(() => Array.from(new Set(valoraciones.flatMap(v => v.aspectos_mejora || []))), [valoraciones])
   const caracter = valoraciones.find(v => v.notas && v.notas.length > 0)?.notas?.slice(0, 100) || "Trabajador"
+
+  const isTemporadaActual = temporadaVisualizada === obtenerTemporadaActual()
+  const displayPj = isTemporadaActual ? (j?.partidos_analizados ?? 0) : (j?.est_partidos ?? 0)
+  const displayMin = isTemporadaActual ? (j?.minutos_jugados ?? 0) : (j?.est_minutos ?? 0)
+  const displayGoles = isTemporadaActual ? golesActual : (j?.est_goles ?? 0)
+  const displayAsist = isTemporadaActual ? asistActual : (j?.est_asistencias ?? 0)
+  const displayAmarillas = isTemporadaActual ? amarillasActual : (j?.est_amarillas ?? 0)
+  const displayRojas = isTemporadaActual ? rojasActual : (j?.est_rojas ?? 0)
 
   if (!j) return null
   const edad = calcularEdad(j.fecha_nacimiento)
@@ -791,27 +800,39 @@ export function FichaJugadorModal({
           {/* COL 2: Season Stats */}
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs print:border-slate-300 flex flex-col justify-between">
             <div>
-              <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Temporada {obtenerTemporadaActual()}</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  Temporada
+                  <select
+                    className="bg-transparent text-slate-700 dark:text-slate-300 border-none outline-none font-bold cursor-pointer print:appearance-none hover:text-emerald-600 transition-colors"
+                    value={temporadaVisualizada}
+                    onChange={(e) => setTemporadaVisualizada(e.target.value)}
+                  >
+                    <option value={obtenerTemporadaActual()}>{obtenerTemporadaActual()}</option>
+                    <option value="2025-2026">2025-2026</option>
+                  </select>
+                </h3>
+              </div>
               <div className="grid grid-cols-5 gap-2 text-center mb-6">
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">PJ</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.partidos_analizados ?? 0}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{displayPj}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Min</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{j.minutos_jugados ?? 0}'</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{displayMin}'</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Goles</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{golesActual}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{displayGoles}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Asist</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{asistActual}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{displayAsist}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Tarjetas</p>
-                  <p className="text-xl sm:text-2xl font-black text-amber-600">{amarillasActual} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{rojasActual}</span></p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-600">{displayAmarillas} <span className="text-slate-400 font-normal">/</span> <span className="text-red-600">{displayRojas}</span></p>
                 </div>
               </div>
             </div>
