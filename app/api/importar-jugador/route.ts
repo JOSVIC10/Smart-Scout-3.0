@@ -35,15 +35,31 @@ export async function POST(request: Request) {
       try {
         let player: any = null
 
-        // Intento 1: Parser nativo ultra-rápido compatible con Vercel Serverless (sin Chromium)
+        // Intento 1: Jina AI Reader Cloudflare-Bypass (Optimizado para Vercel Serverless)
         try {
-          const { parseBeSoccerHtml } = require('@/lib/scraper/besoccer_html')
-          player = await parseBeSoccerHtml(targetUrl)
-        } catch (htmlErr: any) {
-          console.warn('Vercel-native HTML parser failed, trying Playwright fallback:', htmlErr.message)
+          const { scrapeViaJina } = require('@/lib/scraper/besoccer_jina')
+          const jinaPlayer = await scrapeViaJina(targetUrl)
+          if (jinaPlayer && !jinaPlayer.nombre.toLowerCase().includes('client') && !jinaPlayer.apellidos.toLowerCase().includes('challenge')) {
+            player = jinaPlayer
+          }
+        } catch (jinaErr: any) {
+          console.warn('Jina Cloudflare bypass failed, trying native HTML parser:', jinaErr.message)
         }
 
-        // Intento 2: Llamada directa in-process Playwright (Local)
+        // Intento 2: Parser nativo ultra-rápido (cuando no hay bloqueo de IP)
+        if (!player) {
+          try {
+            const { parseBeSoccerHtml } = require('@/lib/scraper/besoccer_html')
+            const htmlPlayer = await parseBeSoccerHtml(targetUrl)
+            if (htmlPlayer && !htmlPlayer.nombre.toLowerCase().includes('client') && !htmlPlayer.apellidos.toLowerCase().includes('challenge')) {
+              player = htmlPlayer
+            }
+          } catch (htmlErr: any) {
+            console.warn('Native HTML parser failed, trying Playwright fallback:', htmlErr.message)
+          }
+        }
+
+        // Intento 3: Llamada directa in-process Playwright (Local)
         if (!player) {
           try {
             const { scrapeBeSoccerPlayer } = require('@/lib/scraper/besoccer')
@@ -169,7 +185,7 @@ export async function POST(request: Request) {
 
     if (ogTitleMatch) {
       const titleCandidate = ogTitleMatch[1].trim()
-      if (!titleCandidate.toLowerCase().includes('client challenge') && !titleCandidate.toLowerCase().includes('just a moment')) {
+      if (!/challenge|moment|cloudflare|turnstile|captcha|access denied/i.test(titleCandidate)) {
         rawTitle = titleCandidate
       }
     }
