@@ -228,7 +228,7 @@ export function DirectorioSection({
               icon={<Link2 className="w-4 h-4 text-emerald-400" />}
               onClick={() => setIsImportModalOpen(true)}
             >
-              Añadir por Enlace
+              Importar de BeSoccer
             </Button>
             <Button
               variant="primary"

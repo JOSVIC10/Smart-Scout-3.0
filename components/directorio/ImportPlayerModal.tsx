@@ -28,6 +28,7 @@ interface ParsedPlayer {
   fecha_nacimiento: string
   altura_cm: number
   peso_kg: number
+  nacionalidad?: string
   categoria: Categoria
   valor_mercado: string
   fin_contrato: string
@@ -100,7 +101,7 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
       const nuevo = await crearJugador({
         nombre: parsed.nombre.trim(),
         apellidos: parsed.apellidos.trim(),
-        nacionalidad: 'España',
+        nacionalidad: parsed.nacionalidad || 'España',
         fecha_nacimiento: parsed.fecha_nacimiento || null,
         pie_preferido: parsed.pie_preferido,
         posicion: parsed.posicion,
@@ -301,6 +302,50 @@ export function ImportPlayerModal({ isOpen, onClose, onPlayerCreated }: ImportPl
                     value={parsed.valor_mercado}
                     onChange={(e) => setParsed({ ...parsed, valor_mercado: e.target.value })}
                   />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Fecha de Nacimiento</label>
+                  <Input
+                    type="date"
+                    value={parsed.fecha_nacimiento}
+                    onChange={(e) => setParsed({ ...parsed, fecha_nacimiento: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Nacionalidad</label>
+                  <Input
+                    value={parsed.nacionalidad || 'España'}
+                    onChange={(e) => setParsed({ ...parsed, nacionalidad: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Pie Preferido</label>
+                  <Select
+                    value={parsed.pie_preferido}
+                    onChange={(e) => setParsed({ ...parsed, pie_preferido: e.target.value as PiePreferido })}
+                    options={[
+                      { value: 'derecho', label: 'Diestro (Derecho)' },
+                      { value: 'izquierdo', label: 'Zurdo (Izquierdo)' },
+                      { value: 'ambos', label: 'Ambidextro (Ambos)' }
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Altura / Peso</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Altura cm"
+                      value={parsed.altura_cm || ''}
+                      onChange={(e) => setParsed({ ...parsed, altura_cm: parseInt(e.target.value) || 0 })}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Peso kg"
+                      value={parsed.peso_kg || ''}
+                      onChange={(e) => setParsed({ ...parsed, peso_kg: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

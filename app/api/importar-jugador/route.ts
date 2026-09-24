@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs'
-import { execSync } from 'child_process'
+import { execFile, execSync } from 'child_process'
+import { promisify } from 'util'
 import { createClient } from '@supabase/supabase-js'
+
+const execFileAsync = promisify(execFile)
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mnfxjxorffxnuxpdzzzd.supabase.co'
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnhqeG9yZmZ4bnV4cGR6enpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxODQzNDIsImV4cCI6MjEwMDc2MDM0Mn0.EvAmPcHsgIzJLhFZUlPfp9ujjQr2OfXX4ANnIZifdAc'
@@ -18,265 +21,146 @@ export async function POST(request: Request) {
     const trimmedUrl = url.trim()
     const isBeSoccer = trimmedUrl.toLowerCase().includes('besoccer')
 
-    // 1. Caso BeSoccer
+    // ==========================================
+    // 1. CASO BESOCCER: Extracción precisa con Playwright
+    // ==========================================
     if (isBeSoccer) {
-      // Normalizar URL a es.besoccer.com
-      let targetUrl = trimmedUrl.replace(/https?:\/\/(www\.)?besoccer\.es/i, 'https://es.besoccer.com')
+      let targetUrl = trimmedUrl.split('?')[0].split('#')[0].replace(/\/+$/, '')
+      targetUrl = targetUrl.replace(/https?:\/\/(www\.)?besoccer\.es/i, 'https://es.besoccer.com')
       if (!targetUrl.startsWith('http')) targetUrl = `https://${targetUrl}`
 
       const matchId = targetUrl.match(/-(\d+)$/) || targetUrl.match(/\/(\d+)$/)
       const beSoccerId = matchId ? matchId[1] : null
 
-      let html = ''
-      // Intentar primero con curl del sistema para saltar Cloudflare TLS fingerprints
       try {
-        const curlCmd = `curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: es-ES,es;q=0.9" "${targetUrl}"`
-        html = execSync(curlCmd, { encoding: 'utf8', maxBuffer: 25 * 1024 * 1024, timeout: 10000 })
-      } catch (errCurl) {
-        // Fallback a fetch nativo
+        let player: any = null
+
+        // Intento 1: Parser nativo ultra-rápido compatible con Vercel Serverless (sin Chromium)
         try {
-          const htmlRes = await fetch(targetUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-              'Accept-Language': 'es-ES,es;q=0.9',
-              'Referer': 'https://es.besoccer.com/'
-            }
-          })
-          if (htmlRes.ok) {
-            html = await htmlRes.text()
-          }
-        } catch (errFetch) {
-          console.warn('Fetch fallback also failed:', errFetch)
+          const { parseBeSoccerHtml } = require('@/lib/scraper/besoccer_html')
+          player = await parseBeSoccerHtml(targetUrl)
+        } catch (htmlErr: any) {
+          console.warn('Vercel-native HTML parser failed, trying Playwright fallback:', htmlErr.message)
         }
-      }
 
-      // Comprobar si Cloudflare bloqueó el contenido
-      const isCloudflare = !html || html.includes('Client Challenge') || html.includes('Just a moment') || html.includes('Attention Required')
-
-      let fullName = ''
-      let clubNombre = 'Sin equipo'
-      let posicion = 'MC'
-      let posicionDetallada = 'MC_CEN'
-      let fechaNacimiento = '2001-01-01'
-      let alturaCm = 180
-      let pesoKg = 74
-      let piePreferido = 'derecho'
-      let categoria = 'Tercera RFEF'
-      let valorMercado = '25.000 €'
-      let finContrato = '30 JUN 2026'
-      let scoreGlobal = 75
-
-      // Estadísticas básicas por defecto
-      let estPartidos = 22
-      let estMinutos = 1680
-      let estGoles = 1
-      let estAsistencias = 2
-      let estAmarillas = 3
-      let estRojas = 0
-
-      if (!isCloudflare && html.length > 3000) {
-        const htmlLower = html.toLowerCase()
-
-        // 1. Extraer del JSON-LD de Schema.org
-        const jsonLdMatches = [...html.matchAll(/<script type=["']application\/ld\+json["']>([\s\S]*?)<\/script>/gi)]
-        for (const j of jsonLdMatches) {
+        // Intento 2: Llamada directa in-process Playwright (Local)
+        if (!player) {
           try {
-            const parsed = JSON.parse(j[1])
-            if (parsed['@type'] === 'Person' && parsed.jobTitle) {
-              if (parsed.name) fullName = parsed.name
-              if (parsed.memberOf?.name) clubNombre = parsed.memberOf.name
-              if (parsed.birthDate) fechaNacimiento = parsed.birthDate
-              if (parsed.height?.value) alturaCm = parseInt(parsed.height.value, 10) || 180
-              if (parsed.weight?.value) pesoKg = parseInt(parsed.weight.value, 10) || 74
-
-              const jt = (parsed.jobTitle || '').toLowerCase()
-              if (jt.includes('portero') || jt.includes('gk') || jt.includes('guardameta')) {
-                posicion = 'POR'
-                posicionDetallada = 'POR'
-              } else if (jt.includes('defensa') || jt.includes('central') || jt.includes('cb')) {
-                posicion = 'DFC'
-                posicionDetallada = 'DFC'
-              } else if (jt.includes('lateral') || jt.includes('lb') || jt.includes('rb')) {
-                posicion = 'LAT'
-                posicionDetallada = 'LAT_DER'
-              } else if (jt.includes('delantero') || jt.includes('st') || jt.includes('forward')) {
-                posicion = 'DC'
-                posicionDetallada = 'DC'
-              } else if (jt.includes('extremo') || jt.includes('winger')) {
-                posicion = 'EXT'
-                posicionDetallada = 'EXT_DER'
-              } else if (jt.includes('pivote') || jt.includes('mcd')) {
-                posicion = 'MCD'
-                posicionDetallada = 'MCD'
-              } else {
-                posicion = 'MC'
-                posicionDetallada = 'MC_CEN'
-              }
-              break
-            }
-          } catch (e) {}
-        }
-
-        // 2. Extraer nombre completo del panel-subtitle
-        const panelSubtitle = html.match(/class=["']panel-subtitle["'][^>]*>([\s\S]*?)<\/div>/i)
-        if (panelSubtitle) {
-          const cleanSub = panelSubtitle[1].replace(/<[^>]+>/g, '').trim()
-          if (cleanSub && cleanSub.length > 2 && !cleanSub.toLowerCase().includes('challenge')) {
-            fullName = cleanSub
+            const { scrapeBeSoccerPlayer } = require('@/lib/scraper/besoccer')
+            player = await scrapeBeSoccerPlayer(targetUrl)
+          } catch (inProcessErr: any) {
+            console.warn('In-process Playwright failed, trying child process:', inProcessErr.message)
           }
         }
 
-        // Si aún no tenemos club
-        if (clubNombre === 'Sin equipo') {
-          const clubMatch = html.match(/class=["'][^"']*team-name[^"']*["'][^>]*>([^<]+)<\/a>/i)
-            || html.match(/<title>[^,]+,\s*([^:]+)\s*:/i)
-          if (clubMatch) {
-            clubNombre = clubMatch[1].trim()
-          }
-        }
+        // Intento 3: Child process buscando en todas las rutas posibles (Local)
+        if (!player) {
+          const possiblePaths = [
+            path.join(process.cwd(), 'smart-scout', 'scripts', 'scrape_besoccer_player.js'),
+            path.join(process.cwd(), 'scripts', 'scrape_besoccer_player.js'),
+            path.join(process.cwd(), 'lib', 'scraper', 'besoccer.js'),
+            path.join(__dirname, '..', '..', '..', 'scripts', 'scrape_besoccer_player.js'),
+            path.join(__dirname, '..', '..', '..', 'lib', 'scraper', 'besoccer.js'),
+            'c:\\Users\\Jose Vicente\\Desktop\\Smart Scout 3.0\\smart-scout\\scripts\\scrape_besoccer_player.js',
+            'c:\\Users\\Jose Vicente\\Desktop\\Smart Scout 3.0\\scripts\\scrape_besoccer_player.js'
+          ]
+          const scriptPath = possiblePaths.find(p => fs.existsSync(p)) || possiblePaths[0]
 
-        // Pie preferido y categoría
-        if (htmlLower.includes('zurdo') || htmlLower.includes('pie: izquierdo')) {
-          piePreferido = 'izquierdo'
-        }
-        if (htmlLower.includes('segunda federación') || htmlLower.includes('segunda rfef')) {
-          categoria = 'Segunda RFEF'
-        }
-
-        // Rendimiento: estadísticas básicas reales
-        const rendMatch = html.match(/class=["']panel-title["']>Rendimiento profesional[\s\S]*?<\/table>/i)
-        if (rendMatch) {
-          const tableHtml = rendMatch[0]
-          const row365 = tableHtml.match(/<td>Últimos 365 días<\/td>\s*<td>(\d+)<\/td>[\s\S]*?<span>(\d+)<\/span>/i)
-          if (row365) {
-            estPartidos = parseInt(row365[1], 10) || estPartidos
-            estAmarillas = parseInt(row365[2], 10) || estAmarillas
-            estMinutos = Math.round(estPartidos * 78)
-          } else {
-            const firstRow = tableHtml.match(/<tr class=["']row-body["']>\s*<td>[^<]+<\/td>\s*<td>(\d+)<\/td>/i)
-            if (firstRow) {
-              estPartidos = parseInt(firstRow[1], 10) || estPartidos
-              estMinutos = Math.round(estPartidos * 75)
-            }
-          }
-        }
-
-        // Goles y asistencias calibrados por posición
-        if (posicion === 'DC') {
-          estGoles = Math.max(3, Math.round(estPartidos * 0.35))
-          estAsistencias = Math.max(1, Math.round(estPartidos * 0.12))
-        } else if (posicion === 'EXT') {
-          estGoles = Math.max(2, Math.round(estPartidos * 0.2))
-          estAsistencias = Math.max(3, Math.round(estPartidos * 0.22))
-        } else if (posicion === 'MC' || posicion === 'MCD') {
-          estGoles = Math.max(1, Math.round(estPartidos * 0.08))
-          estAsistencias = Math.max(2, Math.round(estPartidos * 0.16))
-        } else if (posicion === 'POR') {
-          estGoles = 0
-          estAsistencias = 0
-        } else {
-          estGoles = Math.max(0, Math.round(estPartidos * 0.04))
-          estAsistencias = Math.max(1, Math.round(estPartidos * 0.08))
-        }
-      }
-
-      // Fallback inteligente del slug si fullName sigue vacío o tiene palabras de Cloudflare
-      if (!fullName || fullName.toLowerCase().includes('challenge') || fullName.toLowerCase().includes('besoccer') || fullName.toLowerCase().includes('just a moment')) {
-        const slugMatch = targetUrl.match(/\/jugador\/([^\/]+)$/) || targetUrl.match(/\/player\/([^\/]+)$/)
-        if (slugMatch) {
-          const rawSlug = slugMatch[1].replace(/-\d+$/, '') // quitar id numérico
-          fullName = rawSlug
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-        }
-      }
-
-      // Separar nombre y apellidos
-      const nameParts = fullName ? fullName.trim().split(/\s+/) : ['Jugador', 'Observado']
-      let nombre = nameParts[0] || 'Jugador'
-      let apellidos = nameParts.slice(1).join(' ') || 'Observado'
-
-      // Extraer y descargar foto
-      let fotoUrl: string | null = null
-      if (beSoccerId) {
-        const cdnPhoto = `https://cdn.resfu.com/img_data/players/medium/${beSoccerId}.jpg?size=340x&lossy=1`
-        fotoUrl = cdnPhoto
-
-        try {
-          const imgRes = await fetch(cdnPhoto, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-              'Referer': 'https://es.besoccer.com/'
-            }
+          const { stdout } = await execFileAsync('node', [scriptPath, targetUrl], {
+            timeout: 45000,
+            maxBuffer: 15 * 1024 * 1024
           })
-          if (imgRes.ok) {
-            const arrayBuffer = await imgRes.arrayBuffer()
-            const buffer = Buffer.from(arrayBuffer)
-            if (buffer.length > 500) {
-              const publicDir = path.join(process.cwd(), 'public', 'jugadores')
-              if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true })
-              const localPath = path.join(publicDir, `${beSoccerId}.jpg`)
-              fs.writeFileSync(localPath, buffer)
-              fotoUrl = `/jugadores/${beSoccerId}.jpg`
+          const rawOutput = (stdout || '').trim()
+          const startIdx = rawOutput.indexOf('{')
+          const endIdx = rawOutput.lastIndexOf('}')
+          if (startIdx !== -1 && endIdx !== -1) {
+            player = JSON.parse(rawOutput.substring(startIdx, endIdx + 1))
+          } else {
+            player = JSON.parse(rawOutput)
+          }
+        }
 
-              // Subir a Supabase Storage en segundo plano
-              try {
-                await supabase.storage.from('jugadores').upload(`${beSoccerId}.jpg`, buffer, {
-                  contentType: 'image/jpeg',
-                  upsert: true
-                })
-              } catch (e) {}
+        if (player) {
+          // Gestionar foto del jugador (CDN, Local si es posible, o Supabase Storage para Vercel)
+          if (beSoccerId) {
+            const cdnPhoto = `https://cdn.resfu.com/img_data/players/medium/${beSoccerId}.jpg?size=340x&lossy=1`
+            player.foto_url = cdnPhoto
+
+            try {
+              const imgRes = await fetch(cdnPhoto, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                  'Referer': 'https://es.besoccer.com/'
+                }
+              })
+              if (imgRes.ok) {
+                const arrayBuffer = await imgRes.arrayBuffer()
+                const buffer = Buffer.from(arrayBuffer)
+                if (buffer.length > 500) {
+                  // 1. Guardar en local solo si el filesystem lo permite (no en Vercel read-only)
+                  try {
+                    const publicDir = path.join(process.cwd(), 'public', 'jugadores')
+                    if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true })
+                    const localPath = path.join(publicDir, `${beSoccerId}.jpg`)
+                    fs.writeFileSync(localPath, buffer)
+                    player.foto_url = `/jugadores/${beSoccerId}.jpg`
+                  } catch (fsErr) {
+                    // Filesystem read-only (común en Vercel Serverless)
+                  }
+
+                  // 2. Subir a Supabase Storage y obtener URL pública permanente
+                  try {
+                    const { error: upErr } = await supabase.storage.from('jugadores').upload(`${beSoccerId}.jpg`, buffer, {
+                      contentType: 'image/jpeg',
+                      upsert: true
+                    })
+                    if (!upErr) {
+                      const { data: publicUrlData } = supabase.storage.from('jugadores').getPublicUrl(`${beSoccerId}.jpg`)
+                      if (publicUrlData?.publicUrl) {
+                        player.foto_url = publicUrlData.publicUrl
+                      }
+                    }
+                  } catch (storageErr) {}
+                }
+              }
+            } catch (imgErr) {
+              // Mantiene cdnPhoto como foto_url si falla la descarga
             }
           }
-        } catch (e) {
-          // Si falla descarga local, se mantiene cdnPhoto como fotoUrl
-        }
-      }
 
-      return NextResponse.json({
-        success: true,
-        player: {
-          nombre,
-          apellidos,
-          club_nombre: clubNombre,
-          posicion,
-          posicion_detallada: posicionDetallada,
-          pie_preferido: piePreferido,
-          fecha_nacimiento: fechaNacimiento,
-          altura_cm: alturaCm,
-          peso_kg: pesoKg,
-          categoria,
-          valor_mercado: valorMercado,
-          fin_contrato: finContrato,
-          score_global: scoreGlobal,
-          foto_url: fotoUrl,
-          est_partidos: estPartidos,
-          est_minutos: estMinutos,
-          est_goles: estGoles,
-          est_asistencias: estAsistencias,
-          est_amarillas: estAmarillas,
-          est_rojas: estRojas
+          return NextResponse.json({
+            success: true,
+            player
+          })
         }
-      })
+      } catch (scrapeErr: any) {
+        console.error('All BeSoccer scraper attempts failed:', scrapeErr)
+        return NextResponse.json(
+          { error: `Error al extraer datos de BeSoccer: ${scrapeErr.message}` },
+          { status: 500 }
+        )
+      }
     }
 
-    // 2. Caso LaPreferente u otros portales
+    // ==========================================
+    // 2. OTROS PORTALES (LaPreferente, Transfermarkt, etc.) o Fallback
+    // ==========================================
     let htmlGen = ''
     try {
       const curlCmd = `curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: es-ES,es;q=0.9" "${trimmedUrl}"`
       htmlGen = execSync(curlCmd, { encoding: 'utf8', maxBuffer: 25 * 1024 * 1024, timeout: 10000 })
     } catch (e) {
-      const generalRes = await fetch(trimmedUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      try {
+        const generalRes = await fetch(trimmedUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          }
+        })
+        if (generalRes.ok) {
+          htmlGen = await generalRes.text()
         }
-      })
-      if (generalRes.ok) {
-        htmlGen = await generalRes.text()
-      }
+      } catch (fErr) {}
     }
 
     let rawTitle = ''
@@ -290,7 +174,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Fallback al slug de URL si el título fue bloqueado
     if (!rawTitle) {
       const partsSlug = trimmedUrl.split('/').filter(Boolean)
       const lastSlug = partsSlug[partsSlug.length - 1] || 'jugador-scouted'
@@ -312,7 +195,8 @@ export async function POST(request: Request) {
         pie_preferido: 'derecho',
         fecha_nacimiento: '2001-01-01',
         altura_cm: 180,
-        peso_kg: 75,
+        peso_kg: 74,
+        nacionalidad: 'España',
         categoria: 'Tercera RFEF',
         valor_mercado: '25.000 €',
         fin_contrato: '30 JUN 2026',
